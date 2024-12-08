@@ -38,7 +38,7 @@ export type HistoryTableReqType = {
 
 export type HistoryTableActionType = {
     id: string;
-    type: "ban" | "warn";
+    type: "ban" | "warn" | "kick";
     playerName: string | false;
     author: string;
     reason: string;

@@ -61,6 +61,7 @@
     "string-argv": "^0.3.2",
     "systeminformation": "^5.23.5",
     "throttle-debounce": "^5.0.2",
+    "txadmin-core": "file:",
     "unicode-emoji-json": "^0.8.0",
     "xss": "^1.0.15",
     "zod": "^3.23.8"

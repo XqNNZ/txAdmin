@@ -1,14 +1,13 @@
-import { useEffect, useRef, useState } from 'react';
+import { forwardRef, useEffect, useRef, useState } from 'react';
 import { useVirtualizer } from '@tanstack/react-virtual';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import TxAnchor from '@/components/TxAnchor';
 import { cn, convertRowDateTime } from '@/lib/utils';
 import { TableBody, TableCell, TableHeader, TableRow } from "@/components/ui/table";
-import { Loader2Icon, GavelIcon, AlertTriangleIcon, Undo2Icon, TimerOffIcon, TimerIcon, HourglassIcon } from 'lucide-react';
+import { Loader2Icon, GavelIcon, AlertTriangleIcon, Undo2Icon, TimerOffIcon, TimerIcon, UserRoundMinus } from 'lucide-react';
 import { useBackendApi } from '@/hooks/fetch';
 import { HistoryTableActionType, HistoryTableSearchResp, HistoryTableSearchType, HistoryTableSortingType } from '@shared/historyApiTypes';
 import { useOpenActionModal } from '@/hooks/actionModal';
-import { SEARCH_ANY_STRING } from './HistorySearchBox';
 
 
 /**
@@ -27,16 +26,24 @@ function HistoryRow({ action, modalOpener }: HistoryRowProps) {
     // Type indicator
     let rowPrefix: React.ReactNode;
     let rowId: React.ReactNode;
+    // Warns: Blue (--info/text-primary)
     if (action.type === 'warn') {
-        rowPrefix = <div className='flex items-center px-1 bg-warning-hint text-warning'>
-            <AlertTriangleIcon className='size-5' />
+        rowPrefix = <div className='flex items-center px-1 bg-info-hint text-info'>
+            <AlertTriangleIcon className='size-5'/>
         </div>
-        rowId = <span className='tracking-wider text-warning'>{action.id}</span>
-    } else if (action.type === 'ban') {
+        rowId = <span className='tracking-wider text-info'>{action.id}</span>
+    } // Bans - Red (--destructive/text-destructive)
+    else if (action.type === 'ban') {
         rowPrefix = <div className='flex items-center px-1 bg-destructive-hint text-destructive'>
-            <GavelIcon className='size-5' />
+            <GavelIcon className='size-5'/>
         </div>
         rowId = <span className='tracking-wider text-destructive'>{action.id}</span>
+    } // Kicks: Orange (--warning/text-warning)
+    else if (action.type === 'kick') {
+        rowPrefix = <div className='flex items-center px-1 bg-warning-hint warning'>
+            <UserRoundMinus className='size-5'/>
+        </div>
+        rowId = <span className='tracking-wider text-warning'>{action.id}</span>
     } else {
         throw new Error(`Invalid action type: ${action.type}`);
     }
@@ -51,8 +58,6 @@ function HistoryRow({ action, modalOpener }: HistoryRowProps) {
         } else if (action.banExpiration === 'active') {
             statusIcon = <TimerIcon className='size-4' />;
         }
-    } else if (action.type === 'warn' && !action.warnAcked) {
-        statusIcon = <HourglassIcon className='size-4' />;
     }
 
     return (
@@ -230,14 +235,14 @@ export default function HistoryTable({ search, filterbyType, filterbyAdmin }: Hi
                 sortingKey: sorting.key,
                 sortingDesc: sorting.desc,
             };
-            if (search.value) {
+            if (search) {
                 queryParams.searchValue = search.value;
                 queryParams.searchType = search.type;
             }
-            if (filterbyType && filterbyType !== SEARCH_ANY_STRING) {
+            if (filterbyType && filterbyType !== '!any') {
                 queryParams.filterbyType = filterbyType;
             }
-            if (filterbyAdmin && filterbyAdmin !== SEARCH_ANY_STRING) {
+            if (filterbyAdmin && filterbyAdmin !== '!any') {
                 queryParams.filterbyAdmin = filterbyAdmin;
             }
             if (!resetOffset && history.length) {
@@ -272,7 +277,7 @@ export default function HistoryTable({ search, filterbyType, filterbyAdmin }: Hi
 
     // The virtualizer
     const rowVirtualizer = useVirtualizer({
-        isScrollingResetDelay: 0,
+        scrollingDelay: 0,
         count: history.length + 1,
         getScrollElement: () => (scrollRef.current as HTMLDivElement)?.getElementsByTagName('div')[0],
         estimateSize: () => 38, // border-b

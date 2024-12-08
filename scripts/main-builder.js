@@ -17,7 +17,8 @@ const txLicenseBannerFile = licenseBanner();
  * NOTE: to run locally: `GITHUB_REF="refs/tags/v9.9.9" npm run build`
  */
 const getPublishVersion = (isOptional) => {
-    const workflowRef = process.env.GITHUB_REF;
+    // const workflowRef = process.env.GITHUB_REF;
+    const workflowRef = 'refs/tags/v9.9.9';
     try {
         if (!workflowRef) {
             if (isOptional) {

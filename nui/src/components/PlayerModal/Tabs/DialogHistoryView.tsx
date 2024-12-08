@@ -27,6 +27,7 @@ const colors = {
   danger: "#c2293e",
   warning: "#f1c40f",
   dark: "gray",
+  info: "#5AC8E1",
 };
 
 type ActionCardProps = {
@@ -59,6 +60,11 @@ const ActionCard: React.FC<ActionCardProps> = ({
     });
   } else if (action.type == "warn") {
     actionColor = colors.warning;
+    actionMessage = t("nui_menu.player_modal.history.warned_by", {
+      author: action.author,
+    });
+  } else if (action.type == "kick") {
+    actionColor = colors.info;
     actionMessage = t("nui_menu.player_modal.history.warned_by", {
       author: action.author,
     });

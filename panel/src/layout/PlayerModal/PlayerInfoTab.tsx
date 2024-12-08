@@ -12,7 +12,7 @@ import { ShieldAlertIcon } from "lucide-react";
 import { useMemo, useRef, useState } from "react";
 
 
-function LogActionCounter({ type, count }: { type: 'Ban' | 'Warn', count: number }) {
+function LogActionCounter({ type, count }: { type: 'Ban' | 'Warn' | 'Kick', count: number }) {
     const pluralLabel = (count > 1) ? `${type}s` : type;
     if (count === 0) {
         return <span className={cn(
@@ -155,6 +155,7 @@ export default function PlayerInfoTab({ playerRef, player, serverTime, tsFetch, 
         isDateOnly
     />;
     const banCount = player.actionHistory.filter((a) => a.type === 'ban' && !a.revokedAt).length;
+    const kickCount = player.actionHistory.filter((a) => a.type === 'kick' && !a.revokedAt).length;
     const warnCount = player.actionHistory.filter((a) => a.type === 'warn' && !a.revokedAt).length;
 
     const handleWhitelistClick = () => {
@@ -243,6 +244,7 @@ export default function PlayerInfoTab({ playerRef, player, serverTime, tsFetch, 
                 <dt className="text-sm font-medium leading-6 text-muted-foreground">Sanctions</dt>
                 <dd className="text-sm leading-6 mt-0 space-x-2">
                     <LogActionCounter type="Ban" count={banCount} />
+                    <LogActionCounter type="Kick" count={kickCount} />
                     <LogActionCounter type="Warn" count={warnCount} />
                 </dd>
                 <dd className="text-right">

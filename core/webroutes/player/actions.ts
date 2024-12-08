@@ -347,7 +347,25 @@ async function handleKick(ctx: AuthedCtx, player: PlayerClass): Promise<GenericA
         return { error: 'This player is not connected to the server.' };
     }
 
+    const allIds = player.getAllIdentifiers();
+    if (!allIds.length) {
+        return { error: 'Cannot kick a player with no identifiers.' };
+    }
+
     try {
+        //Register action
+        let actionId;
+        try {
+            actionId = ctx.txAdmin.playerDatabase.registerKickAction(
+                allIds,
+                ctx.admin.name,
+                kickReason,
+                player.displayName,
+            );
+        } catch (error) {
+            return { error: `Failed to warn player: ${(error as Error).message}` };
+        }
+
         ctx.admin.logAction(`Kicked ${player.displayName}: ${kickReason}`);
         const fullReason = ctx.txAdmin.translator.t(
             'kick_messages.player',

@@ -100,9 +100,6 @@ export default function DesktopHeader() {
                     </HeaderMenuItem>
                     <HeaderMenuItem href="/insights/player-drops">
                         Player Drops
-                        <DynamicNewItem featName='newPlayerDropsPage' durationDays={7}>
-                            <div className="ml-1 mb-2 rounded-md size-2 bg-accent" />
-                        </DynamicNewItem>
                     </HeaderMenuItem>
                     <HeaderMenuItem href="/whitelist">
                         Whitelist
@@ -112,9 +109,6 @@ export default function DesktopHeader() {
                     </HeaderMenuItem>
                     <HeaderMenuItem href="/settings" disabled={!hasPerm('settings.view')}>
                         Settings
-                        <DynamicNewItem featName='hideAdminNames' durationDays={7}>
-                            <div className="ml-1 mb-2 rounded-md size-2 bg-accent" />
-                        </DynamicNewItem>
                     </HeaderMenuItem>
                 </NavigationMenuList>
             </NavigationMenu>

@@ -19,6 +19,9 @@ function HistoryItem({ action, serverTime, modalOpener }: HistoryItemProps) {
     } else if (action.type === 'warn') {
         borderColorClass = 'border-warning';
         actionMessage = `WARNED by ${action.author}`;
+    } else if (action.type === 'kick') {
+        borderColorClass = 'border-info';
+        actionMessage = `KICKED by ${action.author}`;
     }
     if (action.revokedBy) {
         borderColorClass = '';

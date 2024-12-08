@@ -165,6 +165,7 @@ async function handleRevokeAction(ctx: AuthedCtx): Promise<GenericApiOkResp> {
     const perms = [];
     if (ctx.admin.hasPermission('players.ban')) perms.push('ban');
     if (ctx.admin.hasPermission('players.warn')) perms.push('warn');
+    if (ctx.admin.hasPermission('players.kick')) perms.push('kick');
 
     let action;
     try {

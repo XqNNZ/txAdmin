@@ -65,7 +65,7 @@ const ActionCard: React.FC<ActionCardProps> = ({
     });
   } else if (action.type == "kick") {
     actionColor = colors.info;
-    actionMessage = t("nui_menu.player_modal.history.warned_by", {
+    actionMessage = t("nui_menu.player_modal.history.kicked_by", {
       author: action.author,
     });
   }

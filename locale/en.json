@@ -83,14 +83,14 @@
             "unknown_error": "An unknown error occurred.",
             "not_enabled": "The txAdmin Menu is not enabled! You can enable it in the txAdmin settings page.",
             "announcement_title": "Server Announcement by %{author}:",
-            "directmessage_title": "DM from admin %{author}:",
+            "directmessage_title": "DM from staff %{author}:",
             "dialog_empty_input": "You cannot have an empty input.",
             "onesync_error": "This option requires OneSync to be enabled."
         },
         "frozen": {
             "froze_player": "You have frozen the player!",
             "unfroze_player": "You have unfrozen the player!",
-            "was_frozen": "You have been frozen by a server admin!"
+            "was_frozen": "You have been frozen by a server staff!"
         },
         "common": {
             "cancel": "Cancel",

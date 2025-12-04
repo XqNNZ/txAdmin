@@ -350,7 +350,7 @@ export default class PlayerDatabase {
         //Saves it to the database
         const timestamp = now();
         try {
-            const actionID = genActionID(this.#db.obj, 'warn');
+            const actionID = genActionID(this.#db.obj, 'kick');
             const toDB: DatabaseActionKickType = {
                 id: actionID,
                 type: 'kick',
@@ -372,7 +372,7 @@ export default class PlayerDatabase {
             this.#db.writeFlag(SavePriority.HIGH);
             return actionID;
         } catch (error) {
-            let msg = `Failed to register warn to database with message: ${(error as Error).message}`;
+            let msg = `Failed to register kick to database with message: ${(error as Error).message}`;
             console.error(msg);
             console.verbose.dir(error);
             throw error;

@@ -11,7 +11,6 @@
     "keywords": [],
     "author": "André Tabarra",
     "license": "MIT",
-    "dependencies": {
-        "txadmin-shared": "file:"
-    }
+    "dependencies": {},
+    "devDependencies": {}
 }

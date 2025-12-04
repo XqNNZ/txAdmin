@@ -1,4 +1,5 @@
-import { cn, tsToLocaleDateTimeString } from "@/lib/utils";
+import { cn } from "@/lib/utils";
+import { tsToLocaleDateTimeString } from "@/lib/dateTime";
 import { PlayerHistoryItem } from "@shared/playerApiTypes";
 import InlineCode from "@/components/InlineCode";
 import { useOpenActionModal } from "@/hooks/actionModal";
@@ -19,9 +20,6 @@ function HistoryItem({ action, serverTime, modalOpener }: HistoryItemProps) {
     } else if (action.type === 'warn') {
         borderColorClass = 'border-warning';
         actionMessage = `WARNED by ${action.author}`;
-    } else if (action.type === 'kick') {
-        borderColorClass = 'border-info';
-        actionMessage = `KICKED by ${action.author}`;
     }
     if (action.revokedBy) {
         borderColorClass = '';

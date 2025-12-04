@@ -11,6 +11,7 @@ export type PlayerHistoryItem = {
     exp?: number;
     revokedBy?: string;
     revokedAt?: number;
+    revokedReason?: string;
 }
 
 export type PlayerModalPlayerData = {

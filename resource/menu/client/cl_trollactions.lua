@@ -132,20 +132,18 @@ end
 --[[ Net Events ]]
 RegisterNetEvent('txcl:setDrunk', function()
     if IS_FIVEM then
-        drunkThreadFivem()
+        -- oops nothing happened 🤭
     else
-        drunkThreadRedm()
+        -- oops nothing happened 🤭
     end
 end)
 
 RegisterNetEvent('txcl:setOnFire', function()
-    debugPrint('Setting player on fire')
-    local playerPed = PlayerPedId()
-    StartEntityFire(playerPed)
+    -- oops nothing happened 🤭
 end)
 
 RegisterNetEvent('txcl:wildAttack', function()
-    startWildAttack()
+    -- oops nothing happened 🤭
 end)
 
 

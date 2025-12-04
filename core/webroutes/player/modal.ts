@@ -23,6 +23,7 @@ const processHistoryLog = (hist: DatabaseActionType[]) => {
                 exp: log.expiration ? log.expiration : undefined,
                 revokedBy: log.revocation.author ? log.revocation.author : undefined,
                 revokedAt: log.revocation.timestamp ? log.revocation.timestamp : undefined,
+                revokedReason: log.revocation.reason ? log.revocation.reason : undefined,
             };
         });
     } catch (error) {

@@ -124,6 +124,11 @@ export default function ActionModal() {
                 <span className="text-warning-inline font-mono mr-2">[{modalData.action.id}]</span>
                 Warned {displayName}
             </>;
+        } else if (modalData.action.type === 'kick') {
+            pageTitle = <>
+                <span className="text-info-inline font-mono mr-2">[{modalData.action.id}]</span>
+                Kicked {displayName}
+            </>;
         } else {
             throw new Error(`Unknown action type: ${modalData.action.type}`);
         }

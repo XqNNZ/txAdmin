@@ -265,25 +265,6 @@ const DialogActionView: React.FC = () => {
     fetchNui("togglePlayerFreeze", { id: assocPlayer.id });
   };
 
-  //Troll
-  const handleDrunk = () => {
-    if (!userHasPerm("players.troll", playerPerms)) return showNoPerms("Troll");
-    fetchNui("drunkEffectPlayer", { id: assocPlayer.id });
-    enqueueSnackbar(t("nui_menu.player_modal.actions.command_sent"));
-  };
-
-  const handleSetOnFire = () => {
-    if (!userHasPerm("players.troll", playerPerms)) return showNoPerms("Troll");
-    fetchNui("setOnFire", { id: assocPlayer.id });
-    enqueueSnackbar(t("nui_menu.player_modal.actions.command_sent"));
-  };
-
-  const handleWildAttack = () => {
-    if (!userHasPerm("players.troll", playerPerms)) return showNoPerms("Troll");
-    fetchNui("wildAttack", { id: assocPlayer.id });
-    enqueueSnackbar(t("nui_menu.player_modal.actions.command_sent"));
-  };
-
   const TooltipOverride: React.FC<TooltipProps> = (props) => (
     <Tooltip
       classes={{
@@ -382,35 +363,6 @@ const DialogActionView: React.FC = () => {
           disabled={!userHasPerm("players.freeze", playerPerms)}
         >
           {t("nui_menu.player_modal.actions.interaction.options.toggle_freeze")}
-        </Button>
-      </Box>
-      <Typography className={classes.sectionTitle}>
-        {t("nui_menu.player_modal.actions.troll.title")}
-      </Typography>
-      <Box className={classes.actionGrid}>
-        <Button
-          variant="outlined"
-          color="primary"
-          onClick={handleDrunk}
-          disabled={!userHasPerm("players.troll", playerPerms)}
-        >
-          {t("nui_menu.player_modal.actions.troll.options.drunk")}
-        </Button>
-        <Button
-          variant="outlined"
-          color="primary"
-          onClick={handleSetOnFire}
-          disabled={!userHasPerm("players.troll", playerPerms)}
-        >
-          {t("nui_menu.player_modal.actions.troll.options.fire")}
-        </Button>
-        <Button
-          variant="outlined"
-          color="primary"
-          onClick={handleWildAttack}
-          disabled={!userHasPerm("players.troll", playerPerms)}
-        >
-          {t("nui_menu.player_modal.actions.troll.options.wild_attack")}
         </Button>
       </Box>
     </StyledDialogContent>

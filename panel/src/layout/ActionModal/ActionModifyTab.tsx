@@ -6,6 +6,7 @@ import { useAdminPerms } from "@/hooks/auth";
 import { Loader2Icon } from "lucide-react";
 import { useBackendApi } from "@/hooks/fetch";
 import type { ApiRevokeActionReqSchema } from "../../../../core/routes/history/actions";
+import { useOpenPromptDialog } from "@/hooks/dialogs";
 
 
 type ActionModifyTabProps = {
@@ -16,6 +17,7 @@ type ActionModifyTabProps = {
 export default function ActionModifyTab({ action, refreshModalData }: ActionModifyTabProps) {
     const [isRevoking, setIsRevoking] = useState(false);
     const { hasPerm } = useAdminPerms();
+    const openPromptDialog = useOpenPromptDialog();
     const revokeActionApi = useBackendApi<GenericApiOkResp, ApiRevokeActionReqSchema>({
         method: 'POST',
         path: `/history/revokeAction`,
@@ -23,24 +25,39 @@ export default function ActionModifyTab({ action, refreshModalData }: ActionModi
 
     const upperCasedType = action.type.charAt(0).toUpperCase() + action.type.slice(1);
     const doRevokeAction = () => {
-        setIsRevoking(true);
-        revokeActionApi({
-            data: { actionId: action.id },
-            toastLoadingMessage: `Revoking ${action.type}...`,
-            genericHandler: {
-                successMsg: `${upperCasedType} revoked.`,
-            },
-            success: (data) => {
-                setIsRevoking(false);
-                if ('success' in data) {
-                    refreshModalData();
-                }
+        openPromptDialog({
+            title: `Revoke ${upperCasedType}`,
+            message: `Please provide a reason for revoking this ${action.type}.`,
+            placeholder: 'Reason for revocation (optional)',
+            submitLabel: 'Revoke',
+            cancelLabel: 'Cancel',
+            isMultiline: true,
+            required: false,
+            onSubmit: (reason) => {
+                setIsRevoking(true);
+                revokeActionApi({
+                    data: { actionId: action.id, reason: reason || undefined },
+                    toastLoadingMessage: `Revoking ${action.type}...`,
+                    genericHandler: {
+                        successMsg: `${upperCasedType} revoked.`,
+                    },
+                    success: (data) => {
+                        setIsRevoking(false);
+                        if ('success' in data) {
+                            refreshModalData();
+                        }
+                    },
+                });
             },
         });
     }
 
     const isAlreadyRevoked = !!action.revocation.timestamp;
-    const hasRevokePerm = hasPerm(action.type === 'warn' ? 'players.warn' : 'players.ban');
+    const hasRevokePerm = hasPerm(
+        action.type === 'warn' ? 'players.warn' : 
+        action.type === 'kick' ? 'players.kick' : 
+        'players.ban'
+    );
     const revokeBtnLabel = isAlreadyRevoked
         ? `${action.type} revoked`
         : hasRevokePerm

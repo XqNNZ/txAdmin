@@ -153,6 +153,8 @@ export default async function HistorySearch(ctx: AuthedCtx) {
             reason: a.reason,
             timestamp: a.timestamp,
             isRevoked: !!a.revocation.timestamp,
+            revokedBy: a.revocation.author ? a.revocation.author : undefined,
+            revokedReason: a.revocation.reason ? a.revocation.reason : undefined,
             banExpiration,
             warnAcked,
         } satisfies HistoryTableActionType;

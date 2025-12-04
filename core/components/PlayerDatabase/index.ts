@@ -363,6 +363,7 @@ export default class PlayerDatabase {
                 revocation: {
                     timestamp: null,
                     author: null,
+                    reason: null,
                 },
             };
             this.#db.obj.chain.get('actions')
@@ -408,7 +409,8 @@ export default class PlayerDatabase {
     revokeAction(
         actionId: string,
         author: string,
-        allowedTypes: string[] | true = true
+        allowedTypes: string[] | true = true,
+        reason: string | null = null
     ): DatabaseActionType {
         if (!this.#db.obj) throw new Error(`database not ready yet`);
         if (typeof actionId !== 'string' || !actionId.length) throw new Error('Invalid actionId.');
@@ -428,6 +430,7 @@ export default class PlayerDatabase {
             action.revocation = {
                 timestamp: now(),
                 author,
+                reason: reason || null,
             };
             this.#db.writeFlag(SavePriority.HIGH);
             return cloneDeep(action);

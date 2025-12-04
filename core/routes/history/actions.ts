@@ -19,6 +19,7 @@ export type ApiAddLegacyBanReqSchema = z.infer<typeof addLegacyBanBodySchema>;
 
 const revokeActionBodySchema = z.object({
     actionId: z.string(),
+    reason: z.string().trim().min(1).max(2048).optional(),
 });
 export type ApiRevokeActionReqSchema = z.infer<typeof revokeActionBodySchema>;
 
@@ -151,7 +152,7 @@ async function handleRevokeAction(ctx: AuthedCtx): Promise<GenericApiOkResp> {
     if (!schemaRes.success) {
         return { error: 'Invalid request body.' };
     }
-    const { actionId } = schemaRes.data;
+    const { actionId, reason } = schemaRes.data;
 
     //Check permissions
     const perms = [];
@@ -160,8 +161,9 @@ async function handleRevokeAction(ctx: AuthedCtx): Promise<GenericApiOkResp> {
 
     let action;
     try {
-        action = txCore.database.actions.revoke(actionId, ctx.admin.name, perms) as DatabaseActionType;
-        ctx.admin.logAction(`Revoked ${action.type} id ${actionId} from ${action.playerName ?? 'identifiers'}`);
+        const revokeReason = reason?.trim() || null;
+        action = txCore.database.actions.revoke(actionId, ctx.admin.name, perms, revokeReason) as DatabaseActionType;
+        ctx.admin.logAction(`Revoked ${action.type} id ${actionId} from ${action.playerName ?? 'identifiers'}${revokeReason ? `: ${revokeReason}` : ''}`);
     } catch (error) {
         return { error: `Failed to revoke action: ${(error as Error).message}` };
     }

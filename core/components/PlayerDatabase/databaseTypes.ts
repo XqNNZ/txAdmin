@@ -27,6 +27,7 @@ export type DatabaseActionBaseType = {
     revocation: {
         timestamp: number | null;
         author: string | null;
+        reason: string | null;
     };
 };
 export type DatabaseActionBanType = {

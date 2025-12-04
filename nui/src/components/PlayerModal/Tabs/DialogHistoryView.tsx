@@ -13,6 +13,7 @@ import { GenericApiErrorResp, GenericApiResp } from "@shared/genericApiTypes";
 import { ButtonXS } from "../../misc/ButtonXS";
 import { tsToLocaleDateTime, userHasPerm } from "@nui/src/utils/miscUtils";
 import { usePermissionsValue } from "@nui/src/state/permissions.state";
+import { useDialogContext } from "../../../provider/DialogProvider";
 
 // TODO: Make the styling on this nicer
 const NoHistoryBox = () => (
@@ -26,6 +27,7 @@ const NoHistoryBox = () => (
 const colors = {
   danger: "#c2293e",
   warning: "#f1c40f",
+  info: "#3498db",
   dark: "gray",
 };
 
@@ -46,6 +48,10 @@ const ActionCard: React.FC<ActionCardProps> = ({
   const theme = useTheme();
   const t = useTranslate();
 
+  // Check if action is older than 3 months (90 days = 7,776,000 seconds)
+  const threeMonthsAgo = serverTime - (90 * 24 * 60 * 60);
+  const isOlderThan3Months = action.ts < threeMonthsAgo;
+
   const revokeButonDisabled =
     action.revokedBy !== undefined ||
     (action.type == "warn" && permsDisableWarn) ||
@@ -53,21 +59,36 @@ const ActionCard: React.FC<ActionCardProps> = ({
 
   let footerNote, actionColor, actionMessage;
   if (action.type == "ban") {
-    actionColor = colors.danger;
+    actionColor = isOlderThan3Months ? colors.dark : colors.danger;
     actionMessage = t("nui_menu.player_modal.history.banned_by", {
       author: action.author,
     });
   } else if (action.type == "warn") {
-    actionColor = colors.warning;
+    actionColor = isOlderThan3Months ? colors.dark : colors.warning;
     actionMessage = t("nui_menu.player_modal.history.warned_by", {
+      author: action.author,
+    });
+  } else if (action.type == "kick") {
+    actionColor = isOlderThan3Months ? colors.dark : colors.info;
+    actionMessage = t("nui_menu.player_modal.history.kicked_by", {
       author: action.author,
     });
   }
   if (action.revokedBy) {
     actionColor = colors.dark;
-    footerNote = t("nui_menu.player_modal.history.revoked_by", {
-      author: action.revokedBy,
-    });
+    const revocationDate = tsToLocaleDateTime(action.revokedAt ?? 0, "medium");
+    if (action.revokedReason) {
+      footerNote = t("nui_menu.player_modal.history.revoked_by_for_on", {
+        author: action.revokedBy,
+        reason: action.revokedReason,
+        date: revocationDate,
+      });
+    } else {
+      footerNote = t("nui_menu.player_modal.history.revoked_by_on", {
+        author: action.revokedBy,
+        date: revocationDate,
+      });
+    }
   }
   if (typeof action.exp == "number") {
     const expirationDate = tsToLocaleDateTime(action.exp, "medium");
@@ -88,6 +109,8 @@ const ActionCard: React.FC<ActionCardProps> = ({
         padding: "0.35rem 0.55rem",
         marginBottom: "6px",
         borderLeft: `solid 4px ${actionColor}`,
+        opacity: isOlderThan3Months ? 0.6 : 1,
+        filter: isOlderThan3Months ? "grayscale(100%)" : "none",
       }}
     >
       <Box
@@ -97,7 +120,9 @@ const ActionCard: React.FC<ActionCardProps> = ({
           justifyContent: "space-between",
         }}
       >
-        <strong>{actionMessage}</strong>
+        <strong style={{ color: isOlderThan3Months ? theme.palette.text.secondary : undefined }}>
+          {actionMessage}
+        </strong>
         <Typography
           variant="caption"
           sx={{
@@ -108,6 +133,7 @@ const ActionCard: React.FC<ActionCardProps> = ({
         >
           ({action.id}) &nbsp;
           {tsToLocaleDateTime(action.ts, "medium")}
+          {isOlderThan3Months && " (3+ months old)"}
           &nbsp;
           <ButtonXS
             color="secondary"
@@ -133,6 +159,7 @@ const ActionCard: React.FC<ActionCardProps> = ({
 
 const DialogHistoryView: React.FC = () => {
   const { enqueueSnackbar } = useSnackbar();
+  const { openDialog } = useDialogContext();
   const playerDetails = usePlayerDetailsValue();
   const forceRefresh = useForcePlayerRefresh();
   const userPerms = usePermissionsValue();
@@ -144,29 +171,36 @@ const DialogHistoryView: React.FC = () => {
     .slice()
     .reverse();
 
-  const handleRevoke = async (actionId: string) => {
-    try {
-      const result = await fetchWebPipe<GenericApiResp>(
-        `/history/revokeAction`,
-        {
-          method: "POST",
-          data: { actionId },
+  const handleRevoke = (actionId: string) => {
+    openDialog({
+      title: t("nui_menu.player_modal.history.revoke_dialog.title"),
+      description: t("nui_menu.player_modal.history.revoke_dialog.description"),
+      placeholder: t("nui_menu.player_modal.history.revoke_dialog.placeholder"),
+      onSubmit: async (reason: string) => {
+        try {
+          const result = await fetchWebPipe<GenericApiResp>(
+            `/history/revokeAction`,
+            {
+              method: "POST",
+              data: { actionId, reason: reason.trim() || undefined },
+            }
+          );
+          if ("success" in result && result.success === true) {
+            forceRefresh((val) => val + 1);
+            enqueueSnackbar(t(`nui_menu.player_modal.history.revoked_success`), {
+              variant: "success",
+            });
+          } else {
+            enqueueSnackbar(
+              (result as GenericApiErrorResp).error ?? t("nui_menu.misc.unknown_error"),
+              { variant: "error" }
+            );
+          }
+        } catch (error) {
+          enqueueSnackbar((error as Error).message, { variant: "error" });
         }
-      );
-      if ("success" in result && result.success === true) {
-        forceRefresh((val) => val + 1);
-        enqueueSnackbar(t(`nui_menu.player_modal.history.revoked_success`), {
-          variant: "success",
-        });
-      } else {
-        enqueueSnackbar(
-          (result as GenericApiErrorResp).error ?? t("nui_menu.misc.unknown_error"),
-          { variant: "error" }
-        );
-      }
-    } catch (error) {
-      enqueueSnackbar((error as Error).message, { variant: "error" });
-    }
+      },
+    });
   };
 
   const hasWarnPerm = userHasPerm('players.warn', userPerms);

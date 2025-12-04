@@ -75,8 +75,8 @@ export default function ActionInfoTab({ action, serverTime, tsFetch }: ActionInf
     let revokedText: React.ReactNode;
     if (action.revocation.timestamp) {
         revokedText = <span className="text-warning-inline">
-            By {action.revocation.author} on <DateTimeCorrected
-                isDateOnly
+            By {action.revocation.author}
+            {action.revocation.reason ? ` for "${action.revocation.reason}"` : ''} on <DateTimeCorrected
                 className="cursor-help"
                 serverTime={serverTime}
                 tsObject={action.revocation.timestamp}

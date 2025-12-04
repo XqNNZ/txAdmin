@@ -5,7 +5,7 @@ import TxAnchor from '@/components/TxAnchor';
 import { cn } from '@/lib/utils';
 import { convertRowDateTime } from '@/lib/dateTime';
 import { TableBody, TableCell, TableHeader, TableRow } from "@/components/ui/table";
-import { Loader2Icon, GavelIcon, AlertTriangleIcon, Undo2Icon, TimerOffIcon, TimerIcon, HourglassIcon } from 'lucide-react';
+import { Loader2Icon, GavelIcon, AlertTriangleIcon, Undo2Icon, TimerOffIcon, TimerIcon, HourglassIcon, UserRoundMinus } from 'lucide-react';
 import { useBackendApi } from '@/hooks/fetch';
 import { HistoryTableActionType, HistoryTableSearchResp, HistoryTableSearchType, HistoryTableSortingType } from '@shared/historyApiTypes';
 import { useOpenActionModal } from '@/hooks/actionModal';
@@ -25,27 +25,63 @@ function HistoryRow({ action, modalOpener }: HistoryRowProps) {
         modalOpener(action.id);
     }
 
+    // Check if action is older than 3 months (90 days = 7,776,000 seconds)
+    const threeMonthsAgo = Math.floor(Date.now() / 1000) - (90 * 24 * 60 * 60);
+    const isOlderThan3Months = action.timestamp < threeMonthsAgo;
+
     // Type indicator
     let rowPrefix: React.ReactNode;
     let rowId: React.ReactNode;
+    // Warns: Blue (--info/text-primary)
     if (action.type === 'warn') {
-        rowPrefix = <div className='flex items-center px-1 bg-warning-hint text-warning'>
-            <AlertTriangleIcon className='size-5' />
+        rowPrefix = <div className={cn(
+            'flex items-center px-1',
+            isOlderThan3Months ? 'bg-muted text-muted-foreground' : 'bg-info-hint text-info'
+        )}>
+            <AlertTriangleIcon className='size-5'/>
         </div>
-        rowId = <span className='tracking-wider text-warning'>{action.id}</span>
-    } else if (action.type === 'ban') {
-        rowPrefix = <div className='flex items-center px-1 bg-destructive-hint text-destructive'>
-            <GavelIcon className='size-5' />
+        rowId = <span className={cn(
+            'tracking-wider',
+            isOlderThan3Months ? 'text-muted-foreground' : 'text-info'
+        )}>{action.id}</span>
+    } // Bans - Red (--destructive/text-destructive)
+    else if (action.type === 'ban') {
+        rowPrefix = <div className={cn(
+            'flex items-center px-1',
+            isOlderThan3Months ? 'bg-muted text-muted-foreground' : 'bg-destructive-hint text-destructive'
+        )}>
+            <GavelIcon className='size-5'/>
         </div>
-        rowId = <span className='tracking-wider text-destructive'>{action.id}</span>
+        rowId = <span className={cn(
+            'tracking-wider',
+            isOlderThan3Months ? 'text-muted-foreground' : 'text-destructive'
+        )}>{action.id}</span>
+    } // Kicks: Orange (--warning/text-warning)
+    else if (action.type === 'kick') {
+        rowPrefix = <div className={cn(
+            'flex items-center px-1',
+            isOlderThan3Months ? 'bg-muted text-muted-foreground' : 'bg-warning-hint text-warning'
+        )}>
+            <UserRoundMinus className='size-5'/>
+        </div>
+        rowId = <span className={cn(
+            'tracking-wider',
+            isOlderThan3Months ? 'text-muted-foreground' : 'text-warning'
+        )}>{action.id}</span>
     } else {
         throw new Error(`Invalid action type: ${action.type}`);
     }
 
     //Status indicator
     let statusIcon: React.ReactNode;
+    let revokedTooltip: string | undefined;
     if (action.isRevoked) {
         statusIcon = <Undo2Icon className='size-4' />;
+        if (action.revokedBy && action.revokedReason) {
+            revokedTooltip = `Revoked by ${action.revokedBy} for "${action.revokedReason}"`;
+        } else if (action.revokedBy) {
+            revokedTooltip = `Revoked by ${action.revokedBy}`;
+        }
     } else if (action.banExpiration) {
         if (action.banExpiration === 'permanent') {
             statusIcon = <TimerOffIcon className='size-4' />;
@@ -57,7 +93,10 @@ function HistoryRow({ action, modalOpener }: HistoryRowProps) {
     }
 
     return (
-        <TableRow onClick={openModal} className='cursor-pointer'>
+        <TableRow onClick={openModal} className={cn(
+            'cursor-pointer',
+            isOlderThan3Months && 'opacity-60 grayscale'
+        )}>
             <TableCell className={cn(
                 'w-[10.4rem] border-r p-0',
                 action.isRevoked && 'opacity-40'
@@ -67,7 +106,7 @@ function HistoryRow({ action, modalOpener }: HistoryRowProps) {
                     <div className='p-2 font-mono'>
                         {rowId}
                     </div>
-                    <div className='flex-grow flex justify-end items-center my-auto pr-2 text-muted-foreground'>
+                    <div className='flex-grow flex justify-end items-center my-auto pr-2 text-muted-foreground' title={revokedTooltip}>
                         {statusIcon}
                     </div>
                 </div>
@@ -90,9 +129,16 @@ function HistoryRow({ action, modalOpener }: HistoryRowProps) {
                 </span>
             </TableCell>
             <TableCell className='min-w-[10rem] px-4 py-2'>
-                <span className='text-ellipsis overflow-hidden line-clamp-1 break-all'>
-                    {convertRowDateTime(action.timestamp)}
-                </span>
+                <div className='flex items-center gap-2'>
+                    <span className='text-ellipsis overflow-hidden line-clamp-1 break-all'>
+                        {convertRowDateTime(action.timestamp)}
+                    </span>
+                    {isOlderThan3Months && (
+                        <span className='text-xs text-muted-foreground italic whitespace-nowrap'>
+                            (3+ months old)
+                        </span>
+                    )}
+                </div>
             </TableCell>
         </TableRow>
     )

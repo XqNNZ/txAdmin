@@ -207,7 +207,8 @@ export default class ActionsDao {
     revoke(
         actionId: string,
         author: string,
-        allowedTypes: string[] | true = true
+        allowedTypes: string[] | true = true,
+        reason: string | null = null
     ): DatabaseActionType {
         if (typeof actionId !== 'string' || !actionId.length) throw new Error('Invalid actionId.');
         if (typeof author !== 'string' || !author.length) throw new Error('Invalid author.');
@@ -226,6 +227,7 @@ export default class ActionsDao {
             action.revocation = {
                 timestamp: now(),
                 author,
+                reason: reason || null,
             };
             this.db.writeFlag(SavePriority.HIGH);
             return cloneDeep(action);

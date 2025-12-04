@@ -1,10 +1,10 @@
-import { GenericApiErrorResp } from "genericApiTypes";
-import { BanTemplatesDataType } from "otherTypes";
+import { GenericApiErrorResp } from "./genericApiTypes";
+import { BanTemplatesDataType } from "./otherTypes";
 
 //Already compliant with new db specs
 export type PlayerHistoryItem = {
     id: string;
-    type: "ban" | "warn" | "kick";
+    type: "ban" | "warn";
     author: string;
     reason: string;
     ts: number;

@@ -1,5 +1,5 @@
-import { DatabaseActionType } from "@core/components/PlayerDatabase/databaseTypes";
-import { GenericApiErrorResp } from "genericApiTypes";
+import { DatabaseActionType } from "@modules/Database/databaseTypes";
+import { GenericApiErrorResp } from "./genericApiTypes";
 
 export type HistoryStatsResp = {
     totalWarns: number;
@@ -38,7 +38,7 @@ export type HistoryTableReqType = {
 
 export type HistoryTableActionType = {
     id: string;
-    type: "ban" | "warn" | "kick";
+    type: "ban" | "warn";
     playerName: string | false;
     author: string;
     reason: string;

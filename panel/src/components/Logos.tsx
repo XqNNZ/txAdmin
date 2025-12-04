@@ -25,7 +25,7 @@ function BalancedLogo({
         <div
         className={className}
         style={{
-            // Responsive “balanced” height with an easy override
+            // Responsive "balanced" height with an easy override
             height: boxHeight ?? "clamp(72px, 10vh, 128px)",
             // Width can be constrained if you like; by default it sizes to content
             width: boxWidth, // undefined = auto

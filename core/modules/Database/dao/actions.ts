@@ -1,6 +1,6 @@
 import { cloneDeep } from 'lodash-es';
 import { DbInstance, SavePriority } from "../instance";
-import { DatabaseActionBanType, DatabaseActionType, DatabaseActionWarnType } from "../databaseTypes";
+import { DatabaseActionBanType, DatabaseActionOccurrenceType, DatabaseActionType, DatabaseActionWarnType } from "../databaseTypes";
 import { genActionID } from "../dbUtils";
 import { now } from '@lib/misc';
 import consoleFactory from '@lib/console';
@@ -172,6 +172,53 @@ export default class ActionsDao {
             return actionID;
         } catch (error) {
             let msg = `Failed to register warn to database with message: ${(error as Error).message}`;
+            console.error(msg);
+            console.verbose.dir(error);
+            throw error;
+        }
+    }
+
+    /**
+     * Registers an occurrence action and returns its id
+     */
+    registerOccurrence(
+        ids: string[],
+        author: string,
+        reason: string,
+        playerName: string | false = false,
+    ): string {
+        //Sanity check
+        if (!Array.isArray(ids) || !ids.length) throw new Error('Invalid ids array.');
+        if (typeof author !== 'string' || !author.length) throw new Error('Invalid author.');
+        if (typeof reason !== 'string' || !reason.length) throw new Error('Invalid reason.');
+        if (playerName !== false && (typeof playerName !== 'string' || !playerName.length)) throw new Error('Invalid playerName.');
+
+        //Saves it to the database
+        const timestamp = now();
+        try {
+            const actionID = genActionID(this.dbo, 'occurrence');
+            const toDB: DatabaseActionOccurrenceType = {
+                id: actionID,
+                type: 'occurrence',
+                ids,
+                playerName,
+                reason,
+                author,
+                timestamp,
+                expiration: false,
+                revocation: {
+                    timestamp: null,
+                    author: null,
+                    reason: null,
+                },
+            };
+            this.chain.get('actions')
+                .push(toDB)
+                .value();
+            this.db.writeFlag(SavePriority.HIGH);
+            return actionID;
+        } catch (error) {
+            let msg = `Failed to register occurrence to database with message: ${(error as Error).message}`;
             console.error(msg);
             console.verbose.dir(error);
             throw error;

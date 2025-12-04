@@ -27,6 +27,9 @@ function HistoryItem({ action, serverTime, modalOpener }: HistoryItemProps) {
     } else if (action.type === 'kick') {
         borderColorClass = isOlderThan3Months ? 'border-muted' : 'border-info';
         actionMessage = `KICKED by ${action.author}`;
+    } else if (action.type === 'occurrence') {
+        borderColorClass = isOlderThan3Months ? 'border-muted' : 'border-muted-foreground';
+        actionMessage = `OCCURRENCE by ${action.author}`;
     }
     if (action.revokedBy) {
         borderColorClass = '';
@@ -67,7 +70,7 @@ function HistoryItem({ action, serverTime, modalOpener }: HistoryItemProps) {
             <span className={cn(
                 'text-sm',
                 isOlderThan3Months && 'text-muted-foreground'
-            )}>{action.reason}</span>
+            )}>{action.reason.length > 50 ? `${action.reason.substring(0, 50)}...` : action.reason}</span>
             {footerNote && <small className="block text-xs opacity-75">{footerNote}</small>}
         </div>
     );

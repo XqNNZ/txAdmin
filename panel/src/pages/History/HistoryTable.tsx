@@ -5,7 +5,7 @@ import TxAnchor from '@/components/TxAnchor';
 import { cn } from '@/lib/utils';
 import { convertRowDateTime } from '@/lib/dateTime';
 import { TableBody, TableCell, TableHeader, TableRow } from "@/components/ui/table";
-import { Loader2Icon, GavelIcon, AlertTriangleIcon, Undo2Icon, TimerOffIcon, TimerIcon, HourglassIcon, UserRoundMinus } from 'lucide-react';
+import { Loader2Icon, GavelIcon, AlertTriangleIcon, Undo2Icon, TimerOffIcon, TimerIcon, HourglassIcon, UserRoundMinus, FileTextIcon } from 'lucide-react';
 import { useBackendApi } from '@/hooks/fetch';
 import { HistoryTableActionType, HistoryTableSearchResp, HistoryTableSearchType, HistoryTableSortingType } from '@shared/historyApiTypes';
 import { useOpenActionModal } from '@/hooks/actionModal';
@@ -68,6 +68,18 @@ function HistoryRow({ action, modalOpener }: HistoryRowProps) {
             'tracking-wider',
             isOlderThan3Months ? 'text-muted-foreground' : 'text-warning'
         )}>{action.id}</span>
+    } // Occurrences: Gray (--muted/text-muted-foreground)
+    else if (action.type === 'occurrence') {
+        rowPrefix = <div className={cn(
+            'flex items-center px-1',
+            isOlderThan3Months ? 'bg-muted text-muted-foreground' : 'bg-muted text-muted-foreground'
+        )}>
+            <FileTextIcon className='size-5'/>
+        </div>
+        rowId = <span className={cn(
+            'tracking-wider',
+            isOlderThan3Months ? 'text-muted-foreground' : 'text-muted-foreground'
+        )}>{action.id}</span>
     } else {
         throw new Error(`Invalid action type: ${action.type}`);
     }
@@ -120,7 +132,7 @@ function HistoryRow({ action, modalOpener }: HistoryRowProps) {
             </TableCell>
             <TableCell className='px-4 py-2 border-r'>
                 <span className='text-ellipsis overflow-hidden line-clamp-1 break-all'>
-                    {action.reason}
+                    {action.reason.length > 50 ? `${action.reason.substring(0, 50)}...` : action.reason}
                 </span>
             </TableCell>
             <TableCell className='px-4 py-2 border-r'>

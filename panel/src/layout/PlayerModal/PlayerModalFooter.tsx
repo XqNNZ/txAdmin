@@ -1,7 +1,7 @@
 import { DialogFooter } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { PlayerModalRefType, useClosePlayerModal } from "@/hooks/playerModal";
-import { AlertTriangleIcon, MailIcon, ShieldCheckIcon } from "lucide-react";
+import { AlertTriangleIcon, FileTextIcon, MailIcon, ShieldCheckIcon } from "lucide-react";
 import { KickOneIcon } from '@/components/KickIcons';
 import { useBackendApi } from "@/hooks/fetch";
 import { useAdminPerms } from "@/hooks/auth";
@@ -37,6 +37,10 @@ export default function PlayerModalFooter({ playerRef, player }: PlayerModalFoot
     const playerWarnApi = useBackendApi<GenericApiOkResp>({
         method: 'POST',
         path: `/player/warn`,
+    });
+    const playerOccurrenceApi = useBackendApi<GenericApiOkResp>({
+        method: 'POST',
+        path: `/player/occurrence`,
     });
 
     const closeOnSuccess = (data: GenericApiOkResp) => {
@@ -129,6 +133,29 @@ export default function PlayerModalFooter({ playerRef, player }: PlayerModalFoot
         });
     }
 
+    const handleOccurrence = () => {
+        if (!player) return;
+        openPromptDialog({
+            title: `Add Occurrence for ${player.displayName}`,
+            message: <p>
+                Type below the occurrence reason. <br />
+                This will be logged to the player's history without notifying them.
+            </p>,
+            placeholder: 'The reason for the occurrence, incident description, etc.',
+            submitLabel: 'Add',
+            required: true,
+            onSubmit: (input) => {
+                playerOccurrenceApi({
+                    queryParams: playerRef,
+                    data: { reason: input },
+                    genericHandler: { successMsg: 'Occurrence added.' },
+                    toastLoadingMessage: 'Adding occurrence...',
+                    success: closeOnSuccess,
+                });
+            }
+        });
+    }
+
     return (
         <DialogFooter className="max-w-2xl gap-2 p-2 md:p-4 border-t grid grid-cols-2 sm:flex">
             <Button
@@ -171,6 +198,15 @@ export default function PlayerModalFooter({ playerRef, player }: PlayerModalFoot
                 className="pl-2"
             >
                 <AlertTriangleIcon className="h-5 mr-1" /> Warn
+            </Button>
+            <Button
+                variant='outline'
+                size='sm'
+                disabled={!hasPerm('players.warn') || !player}
+                onClick={handleOccurrence}
+                className="pl-2"
+            >
+                <FileTextIcon className="h-5 mr-1" /> Occurrence
             </Button>
         </DialogFooter>
     )

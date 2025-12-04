@@ -178,6 +178,36 @@ const DialogActionView: React.FC = () => {
     });
   };
 
+  const handleOccurrence = () => {
+    if (!userHasPerm("players.warn", playerPerms)) return showNoPerms("Occurrence");
+
+    openDialog({
+      title: `${t(
+        "nui_menu.player_modal.actions.moderation.occurrence_dialog.title"
+      )} ${assocPlayer.displayName}`,
+      description: t(
+        "nui_menu.player_modal.actions.moderation.occurrence_dialog.description"
+      ),
+      placeholder: t(
+        "nui_menu.player_modal.actions.moderation.occurrence_dialog.placeholder"
+      ),
+      onSubmit: async (reason: string) => {
+        try {
+          const result = await fetchWebPipe<GenericApiResp>(
+            `/player/occurrence?mutex=current&netid=${assocPlayer.id}`,
+            {
+              method: "POST",
+              data: { reason: reason.trim() },
+            }
+          );
+          handleGenericApiResponse(result, "moderation.occurrence_dialog.success");
+        } catch (error) {
+          enqueueSnackbar((error as Error).message, { variant: "error" });
+        }
+      },
+    });
+  };
+
   const handleSetAdmin = () => {
     if (!userHasPerm("manage.admins", playerPerms)) {
       return showNoPerms("Manage Admins");
@@ -310,6 +340,14 @@ const DialogActionView: React.FC = () => {
           disabled={!userHasPerm("players.kick", playerPerms)}
         >
           {t("nui_menu.player_modal.actions.moderation.options.kick")}
+        </Button>
+        <Button
+          variant="outlined"
+          color="primary"
+          onClick={handleOccurrence}
+          disabled={!userHasPerm("players.warn", playerPerms)}
+        >
+          {t("nui_menu.player_modal.actions.moderation.options.occurrence")}
         </Button>
         <Button
           variant="outlined"

@@ -73,6 +73,11 @@ const ActionCard: React.FC<ActionCardProps> = ({
     actionMessage = t("nui_menu.player_modal.history.kicked_by", {
       author: action.author,
     });
+  } else if (action.type == "occurrence") {
+    actionColor = isOlderThan3Months ? colors.dark : colors.dark;
+    actionMessage = t("nui_menu.player_modal.history.occurrence_by", {
+      author: action.author,
+    });
   }
   if (action.revokedBy) {
     actionColor = colors.dark;
@@ -146,7 +151,7 @@ const ActionCard: React.FC<ActionCardProps> = ({
         </Typography>
       </Box>
       <span style={{ color: theme.palette.text.secondary }}>
-        {action.reason}
+        {action.reason.length > 50 ? `${action.reason.substring(0, 50)}...` : action.reason}
       </span>
       {footerNote && (
         <small style={{ display: "block", paddingTop: "0.35em" }}>

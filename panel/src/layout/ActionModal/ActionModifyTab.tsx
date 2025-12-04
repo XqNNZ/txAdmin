@@ -56,6 +56,7 @@ export default function ActionModifyTab({ action, refreshModalData }: ActionModi
     const hasRevokePerm = hasPerm(
         action.type === 'warn' ? 'players.warn' : 
         action.type === 'kick' ? 'players.kick' : 
+        action.type === 'occurrence' ? 'players.warn' : 
         'players.ban'
     );
     const revokeBtnLabel = isAlreadyRevoked

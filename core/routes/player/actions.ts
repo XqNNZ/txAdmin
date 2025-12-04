@@ -44,6 +44,8 @@ export default async function PlayerActions(ctx: AuthedCtx) {
         return sendTypedResp(await handleDirectMessage(ctx, player));
     } else if (action === 'kick') {
         return sendTypedResp(await handleKick(ctx, player));
+    } else if (action === 'occurrence') {
+        return sendTypedResp(await handleOccurrence(ctx, player));
     } else {
         return sendTypedResp({ error: 'unknown action' });
     }
@@ -360,5 +362,53 @@ async function handleKick(ctx: AuthedCtx, player: PlayerClass): Promise<GenericA
         return { success: true };
     } catch (error) {
         return { error: `Failed to save kick player: ${(error as Error).message}` };
+    }
+}
+
+
+/**
+ * Handle Occurrence Action
+ * Similar to kick but doesn't notify the player
+ */
+async function handleOccurrence(ctx: AuthedCtx, player: PlayerClass): Promise<GenericApiResp> {
+    //Checking request
+    if (anyUndefined(
+        ctx.request.body,
+        ctx.request.body.reason,
+    )) {
+        return { error: 'Invalid request.' };
+    }
+    const occurrenceReason = ctx.request.body.reason.trim() || 'no reason provided';
+
+    //Check permissions
+    if (!ctx.admin.testPermission('players.warn', modulename)) {
+        return { error: 'You don\'t have permission to execute this action.' };
+    }
+
+    const allIds = player.getAllIdentifiers();
+    if (!allIds.length) {
+        return { error: 'Cannot add occurrence for a player with no identifiers.' };
+    }
+
+    try {
+        //Register action
+        let actionId;
+        try {
+            actionId = txCore.database.actions.registerOccurrence(
+                allIds,
+                ctx.admin.name,
+                occurrenceReason,
+                player.displayName,
+            );
+        } catch (error) {
+            return { error: `Failed to register occurrence: ${(error as Error).message}` };
+        }
+
+        ctx.admin.logAction(`Added occurrence for ${player.displayName}: ${occurrenceReason}`);
+
+        // Note: No event is sent to the player - this is intentional
+        return { success: true };
+    } catch (error) {
+        return { error: `Failed to save occurrence: ${(error as Error).message}` };
     }
 }

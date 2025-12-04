@@ -40,7 +40,11 @@ export type DatabaseActionWarnType = {
     expiration: false; //FIXME: remove - BUT DO REMEMBER THE `'XXX' IN YYY` ISSUE!
     acked: boolean; //if the player has acknowledged the warning
 } & DatabaseActionBaseType;
-export type DatabaseActionType = DatabaseActionBanType | DatabaseActionWarnType;
+export type DatabaseActionOccurrenceType = {
+    type: 'occurrence';
+    expiration: false; //FIXME: remove - BUT DO REMEMBER THE `'XXX' IN YYY` ISSUE!
+} & DatabaseActionBaseType;
+export type DatabaseActionType = DatabaseActionBanType | DatabaseActionWarnType | DatabaseActionOccurrenceType;
 
 export type DatabaseWhitelistApprovalsType = {
     identifier: string;

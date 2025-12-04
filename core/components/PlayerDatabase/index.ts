@@ -3,7 +3,7 @@ const modulename = 'PlayerDatabase';
 import { SavePriority, Database } from './database';
 import { genActionID, genWhitelistRequestID } from './idGenerator';
 import TxAdmin from '@core/txAdmin.js';
-import { DatabaseActionBanType, DatabaseActionKickType, DatabaseActionType, DatabaseActionWarnType, DatabasePlayerType, DatabaseWhitelistApprovalsType, DatabaseWhitelistRequestsType } from './databaseTypes';
+import { DatabaseActionBanType, DatabaseActionKickType, DatabaseActionOccurrenceType, DatabaseActionType, DatabaseActionWarnType, DatabasePlayerType, DatabaseWhitelistApprovalsType, DatabaseWhitelistRequestsType } from './databaseTypes';
 import { cloneDeep } from 'lodash-es';
 import { now } from '@core/extras/helpers';
 import consoleFactory from '@extras/console';
@@ -373,6 +373,51 @@ export default class PlayerDatabase {
             return actionID;
         } catch (error) {
             let msg = `Failed to register warn to database with message: ${(error as Error).message}`;
+            console.error(msg);
+            console.verbose.dir(error);
+            throw error;
+        }
+    }
+
+    registerOccurrenceAction(
+        ids: string[],
+        author: string,
+        reason: string,
+        playerName: string | false = false,
+    ): string {
+        //Sanity check
+        if (!this.#db.obj) throw new Error(`database not ready yet`);
+        if (!Array.isArray(ids) || !ids.length) throw new Error('Invalid ids array.');
+        if (typeof author !== 'string' || !author.length) throw new Error('Invalid author.');
+        if (typeof reason !== 'string' || !reason.length) throw new Error('Invalid reason.');
+        if (playerName !== false && (typeof playerName !== 'string' || !playerName.length)) throw new Error('Invalid playerName.');
+
+        //Saves it to the database
+        const timestamp = now();
+        try {
+            const actionID = genActionID(this.#db.obj, 'occurrence');
+            const toDB: DatabaseActionOccurrenceType = {
+                id: actionID,
+                type: 'occurrence',
+                ids,
+                playerName,
+                reason,
+                author,
+                timestamp,
+                expiration: false,
+                revocation: {
+                    timestamp: null,
+                    author: null,
+                    reason: null,
+                },
+            };
+            this.#db.obj.chain.get('actions')
+                .push(toDB)
+                .value();
+            this.#db.writeFlag(SavePriority.HIGH);
+            return actionID;
+        } catch (error) {
+            let msg = `Failed to register occurrence to database with message: ${(error as Error).message}`;
             console.error(msg);
             console.verbose.dir(error);
             throw error;

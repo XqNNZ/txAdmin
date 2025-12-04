@@ -265,6 +265,7 @@
                         "dm": "DM",
                         "warn": "Warn",
                         "kick": "Kick",
+                        "occurrence": "Occurrence",
                         "set_admin": "Give Admin"
                     },
                     "dm_dialog": {
@@ -284,6 +285,12 @@
                         "description": "What is the reason for kicking this player?",
                         "placeholder": "Reason...",
                         "success": "Player kicked!"
+                    },
+                    "occurrence_dialog": {
+                        "title": "Occurrence",
+                        "description": "What is the reason for adding this occurrence?",
+                        "placeholder": "Reason...",
+                        "success": "Occurrence added!"
                     }
                 },
                 "interaction": {
@@ -345,6 +352,7 @@
                 "banned_by": "BANNED by %{author}",
                 "warned_by": "WARNED by %{author}",
                 "kicked_by": "KICKED by %{author}",
+                "occurrence_by": "OCCURRENCE by %{author}",
                 "revoked_by": "Revoked by %{author}.",
                 "revoked_by_on": "Revoked by %{author} on %{date}.",
                 "revoked_by_for": "Revoked by %{author} for \"%{reason}\".",

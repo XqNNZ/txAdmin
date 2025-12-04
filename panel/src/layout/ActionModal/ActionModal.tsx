@@ -129,6 +129,11 @@ export default function ActionModal() {
                 <span className="text-info-inline font-mono mr-2">[{modalData.action.id}]</span>
                 Kicked {displayName}
             </>;
+        } else if (modalData.action.type === 'occurrence') {
+            pageTitle = <>
+                <span className="text-muted-foreground font-mono mr-2">[{modalData.action.id}]</span>
+                Occurrence for {displayName}
+            </>;
         } else {
             throw new Error(`Unknown action type: ${modalData.action.type}`);
         }

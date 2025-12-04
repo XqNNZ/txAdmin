@@ -44,7 +44,11 @@ export type DatabaseActionKickType = {
     type: 'kick';
     expiration: false; //FIXME: remove - BUT DO REMEMBER THE `'XXX' IN YYY` ISSUE!
 } & DatabaseActionBaseType;
-export type DatabaseActionType = DatabaseActionBanType | DatabaseActionWarnType | DatabaseActionKickType;
+export type DatabaseActionOccurrenceType = {
+    type: 'occurrence';
+    expiration: false; //FIXME: remove - BUT DO REMEMBER THE `'XXX' IN YYY` ISSUE!
+} & DatabaseActionBaseType;
+export type DatabaseActionType = DatabaseActionBanType | DatabaseActionWarnType | DatabaseActionKickType | DatabaseActionOccurrenceType;
 
 export type DatabaseWhitelistApprovalsType = {
     identifier: string;

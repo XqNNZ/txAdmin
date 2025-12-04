@@ -6,7 +6,6 @@ import faviconPartial from '/favicon_partial.svg?url';
 import faviconOffline from '/favicon_offline.svg?url';
 import { globalStatusAtom } from './status';
 import { playerCountAtom } from './playerlist';
-import { FxMonitorHealth } from '@shared/enums';
 
 
 /**
@@ -52,7 +51,7 @@ export const useSetPageTitle = () => {
     };
 }
 
-export const pageTitleWatcher: ReturnType<typeof atomEffect> = atomEffect((get, set) => {
+export const pageTitleWatcher = atomEffect((get, set) => {
     if (!window.txConsts.isWebInterface) return;
     const pageTitle = get(pageTitleAtom);
     const globalStatus = get(globalStatusAtom);
@@ -62,9 +61,9 @@ export const pageTitleWatcher: ReturnType<typeof atomEffect> = atomEffect((get, 
         faviconEl.href = faviconDefault;
         document.title = DEFAULT_TITLE;
     } else {
-        if (globalStatus.server.health === FxMonitorHealth.ONLINE) {
+        if (globalStatus.server.status === 'ONLINE') {
             faviconEl.href = faviconOnline;
-        } else if (globalStatus.server.health === FxMonitorHealth.PARTIAL) {
+        } else if (globalStatus.server.status === 'PARTIAL') {
             faviconEl.href = faviconPartial;
         } else {
             faviconEl.href = faviconOffline;

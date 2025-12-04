@@ -6,60 +6,51 @@ import { Input } from "@/components/ui/input";
 import { useAuth } from "@/hooks/auth";
 import { Label } from "@radix-ui/react-label";
 import { ApiAddMasterCallbackFivemData, ApiAddMasterCallbackReq, ApiAddMasterCallbackResp, ApiAddMasterSaveReq, ApiAddMasterSaveResp, ApiOauthCallbackErrorResp } from "@shared/authApiTypes";
+import { useMutation } from "@tanstack/react-query";
 import { useEffect, useRef, useState } from "react";
 import { Loader2 } from "lucide-react";
-import { AuthError, checkCommonOauthErrors, processFetchError, type AuthErrorData } from "./errors";
+import OauthErrors from "./components/OauthErrors";
 import GenericSpinner from "@/components/GenericSpinner";
 import * as CheckboxPrimitive from "@radix-ui/react-checkbox";
 import consts from "@shared/consts";
-import { fetchWithTimeout } from "@/hooks/fetch";
-import { LogoutReasonHash } from "./Login";
 
 
 function RegisterForm({ fivemId, fivemName, profilePicture }: ApiAddMasterCallbackFivemData) {
     const { setAuthData } = useAuth();
-
+    const [errorMessage, setErrorMessage] = useState<string | undefined>();
     const discordRef = useRef<HTMLInputElement>(null);
     const passwordRef = useRef<HTMLInputElement>(null);
     const password2Ref = useRef<HTMLInputElement>(null);
     const termsRef = useRef<typeof CheckboxPrimitive.Root>(null);
-    const [errorMessage, setErrorMessage] = useState<string | undefined>();
-    const [fullPageError, setFullPageError] = useState<AuthErrorData | undefined>();
-    const [isSaving, setIsSaving] = useState(false);
 
-    const addMasterSave = async (password: string, discordId: string | undefined) => {
-        try {
-            setIsSaving(true);
-            const data = await fetchWithTimeout<ApiAddMasterSaveResp, ApiAddMasterSaveReq>(
-                `/auth/addMaster/save`,
-                {
-                    method: 'POST',
-                    body: { discordId, password },
-                }
-            );
+    const submitMutation = useMutation<
+        ApiAddMasterSaveResp,
+        Error,
+        ApiAddMasterSaveReq
+    >({
+        mutationKey: ['auth'],
+        mutationFn: ({ discordId, password }) => fetch('/auth/addMaster/save', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ discordId, password })
+        }).then(res => res.json()),
+        onSuccess: (data) => {
             if ('error' in data) {
-                if (data.error === 'master_already_set') {
-                    setFullPageError({ errorCode: data.error });
-                } else if (data.error === 'invalid_session') {
-                    setFullPageError({
-                        errorCode: data.error,
-                        returnTo: '/addMaster/pin',
-                    });
-                } else {
-                    setErrorMessage(data.error);
-                }
+                setErrorMessage(data.error);
             } else {
                 //Hacky override to prevent logout from rendering this page again
                 window.txConsts.hasMasterAccount = true;
                 setAuthData(data);
             }
-        } catch (error) {
-            const { errorTitle, errorMessage } = processFetchError(error);
-            setErrorMessage(`${errorTitle}: ${errorMessage}`);
-        } finally {
-            setIsSaving(false);
-        }
-    }
+        },
+        onError: (error: Error) => {
+            if (error.message.startsWith('NetworkError')) {
+                setErrorMessage('Network error. If you closed txAdmin, please restart it and try again.');
+            } else {
+                setErrorMessage(error.message);
+            }
+        },
+    });
 
     const handleSubmit = (event?: React.FormEvent<HTMLFormElement>) => {
         event?.preventDefault();
@@ -97,8 +88,8 @@ function RegisterForm({ fivemId, fivemName, profilePicture }: ApiAddMasterCallba
             return;
         }
 
-        //Save!
-        addMasterSave(password, discordId);
+        //Mutate!
+        submitMutation.mutate({ discordId, password });
     };
 
     //Prefill password if dev pass enabled
@@ -115,12 +106,8 @@ function RegisterForm({ fivemId, fivemName, profilePicture }: ApiAddMasterCallba
         }
     }, []);
 
-    if (fullPageError) {
-        return <AuthError error={fullPageError} />
-    }
-
     return <form onSubmit={handleSubmit} className='w-full text-left'>
-        <CardContent className="pt-6 flex flex-col gap-4">
+        <CardContent className="flex flex-col gap-4">
             <div>
                 Cfx.re account
                 <div className="rounded-md border bg-zinc-100 dark:bg-zinc-900 p-2 mt-2 flex flex-row justify-start items-center">
@@ -145,7 +132,7 @@ function RegisterForm({ fivemId, fivemName, profilePicture }: ApiAddMasterCallba
                 <Input
                     className="dark:placeholder:text-zinc-800"
                     id="frm-discord" type="text" ref={discordRef}
-                    placeholder='000000000000000000' disabled={isSaving}
+                    placeholder='000000000000000000' disabled={submitMutation.isPending}
                 />
             </div>
             <div className="grid gap-2">
@@ -156,7 +143,7 @@ function RegisterForm({ fivemId, fivemName, profilePicture }: ApiAddMasterCallba
                 <Input
                     className="dark:placeholder:text-zinc-800"
                     id="frm-password" type="password" ref={passwordRef}
-                    placeholder='password' disabled={isSaving}
+                    placeholder='password' disabled={submitMutation.isPending}
                     required
                 />
             </div>
@@ -165,7 +152,7 @@ function RegisterForm({ fivemId, fivemName, profilePicture }: ApiAddMasterCallba
                 <Input
                     className="dark:placeholder:text-zinc-800"
                     id="frm-password2" type="password" ref={password2Ref}
-                    placeholder='password' disabled={isSaving}
+                    placeholder='password' disabled={submitMutation.isPending}
                     required
                 />
             </div>
@@ -184,8 +171,8 @@ function RegisterForm({ fivemId, fivemName, profilePicture }: ApiAddMasterCallba
             <span className="text-center text-destructive whitespace-pre-wrap">
                 {errorMessage}
             </span>
-            <Button className="w-full" disabled={isSaving}>
-                {isSaving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+            <Button className="w-full" disabled={submitMutation.isPending}>
+                {submitMutation.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                 Register
             </Button>
         </CardFooter>
@@ -196,51 +183,56 @@ function RegisterForm({ fivemId, fivemName, profilePicture }: ApiAddMasterCallba
 export default function AddMasterCallback() {
     const hasPendingMutation = useRef(false); //due to strict mode re-rendering
     const [fivemData, setFivemData] = useState<ApiAddMasterCallbackFivemData | undefined>();
-    const [errorData, setErrorData] = useState<ApiOauthCallbackErrorResp | undefined>(checkCommonOauthErrors);
-    const [isFetching, setIsFetching] = useState(false);
+    const [errorData, setErrorData] = useState<ApiOauthCallbackErrorResp | undefined>();
 
-    const submitCallback = async () => {
-        try {
-            setIsFetching(true);
-            const data = await fetchWithTimeout<ApiAddMasterCallbackResp, ApiAddMasterCallbackReq>(
-                `/auth/addMaster/callback`,
-                {
-                    method: 'POST',
-                    body: {
-                        redirectUri: window.location.href
-                    },
-                }
-            );
+    const callbackMutation = useMutation<
+        ApiAddMasterCallbackResp,
+        Error,
+        ApiAddMasterCallbackReq
+    >({
+        mutationKey: ['auth'],
+        mutationFn: ({ redirectUri }) => fetch('/auth/addMaster/callback', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ redirectUri })
+        }).then(res => res.json()),
+        onSuccess: (data) => {
             if ('errorCode' in data || 'errorTitle' in data) {
                 setErrorData(data);
             } else {
                 setFivemData(data);
             }
-        } catch (error) {
-            setErrorData(processFetchError(error));
-        } finally {
-            setIsFetching(false);
+        },
+        onError: (error) => {
+            if (error.message.startsWith('NetworkError')) {
+                setErrorData({
+                    errorTitle: 'Network Error',
+                    errorMessage: 'If you closed txAdmin, please restart it and try again.'
+                });
+            } else {
+                setErrorData({
+                    errorTitle: 'Unknown Error',
+                    errorMessage: error.message
+                });
+            }
         }
-    }
+    });
 
+    //Auto submit callback to get the fivemData
     useEffect(() => {
         if (fivemData || hasPendingMutation.current) return;
         hasPendingMutation.current = true;
-        const urlError = checkCommonOauthErrors();
-        if (urlError) {
-            setErrorData(urlError);
-            return;
-        }
-        submitCallback();
+        callbackMutation.mutate({
+            redirectUri: window.location.href
+        });
+        return callbackMutation.reset;
     }, []);
 
     if (fivemData) {
         return <RegisterForm {...fivemData} />
     } else if (errorData) {
-        return <AuthError error={{...errorData, returnTo: "/addMaster/pin"}} />
-    } else if (isFetching) {
-        return <GenericSpinner msg="Authenticating..." />;
+        return <OauthErrors error={errorData} returnTo="/addMaster/pin" />
     } else {
-        return <GenericSpinner />
+        return <GenericSpinner msg="Authenticating..." />
     }
 }

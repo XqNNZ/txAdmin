@@ -3,16 +3,10 @@ import { visualizer } from "rollup-plugin-visualizer";
 import { PluginOption, UserConfig, defineConfig } from 'vite';
 import react from '@vitejs/plugin-react-swc';
 import tsconfigPaths from 'vite-tsconfig-paths';
-import { getFxsPaths, licenseBanner } from '../scripts/build/utils';
-import { parseTxDevEnv } from '../shared/txDevEnv';
-process.loadEnvFile('../.env');
+import { getFxsPaths } from '../scripts/scripts-utils.js';
+import config from '../.deploy.config.js';
+import { licenseBanner } from '../scripts/scripts-utils.js';
 
-//Check if TXDEV_FXSERVER_PATH is set
-const txDevEnv = parseTxDevEnv();
-if (!txDevEnv.FXSERVER_PATH) {
-    console.error('Missing TXDEV_FXSERVER_PATH env variable.');
-    process.exit(1);
-}
 
 const baseConfig = {
     build: {
@@ -57,11 +51,15 @@ export default defineConfig(({ command, mode }) => {
     }
 
     if (mode === 'development') {
-        let devDeplyPath: string;
+        let devDeplyPath;
         try {
             //Extract paths and validate them
-            const fxsPaths = getFxsPaths(txDevEnv.FXSERVER_PATH);
-            devDeplyPath = path.join(fxsPaths.monitor, 'nui');
+            if (typeof process.env.TXADMIN_DEV_FXSERVER_PATH !== 'string') {
+                console.error('process.env.TXADMIN_DEV_FXSERVER_PATH is not defined.');
+                process.exit(1);
+            }
+            const { monitorPath } = getFxsPaths(process.env.TXADMIN_DEV_FXSERVER_PATH);
+            devDeplyPath = path.join(monitorPath, 'nui');
         } catch (error) {
             console.error('Could not extract/validate the fxserver and monitor paths.');
             console.error(error);

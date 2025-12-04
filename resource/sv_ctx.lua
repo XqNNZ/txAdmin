@@ -19,24 +19,21 @@ local ServerCtxObj = {
   announceNotiPos = '', -- top-center, top-right, top-left, bottom-center, bottom-right, bottom-left
 }
 
--- local function getRawCustomLocaleData()
---   LoadResourceFile('monitor', '.runtime/locale.json', function(fileData)
---     if not fileData then
---       txPrint('^2Loaded custom locale file.')
---     else
---       txPrint('^1WARNING: failed to load custom locale from path: '..filePath)
---     end
---   end)
-
---   return fileData
--- end
-
 local function getCustomLocaleData()
-  local fileData = LoadResourceFile('monitor', '.runtime/locale.json')
-  if type(fileData) ~="string" then
-    txPrint('^1WARNING: failed to load custom \'locale.json\' file.')
+  --Get convar
+  local filePath = GetConvar('txAdmin-localeFile', 'false')
+  if filePath == 'false' then
     return false
   end
+
+  -- Get file data
+  local fileHandle = io.open(filePath, "rb")
+  if not fileHandle then
+    txPrint('^1WARNING: failed to load custom locale from path: '..filePath)
+    return false
+  end
+  local fileData = fileHandle:read "*a"
+  fileHandle:close()
 
   -- Parse and validate data
   local locale = json.decode(fileData)
@@ -46,7 +43,7 @@ local function getCustomLocaleData()
     or type(locale['nui_warning']) ~= "table"
     or type(locale['nui_menu']) ~= "table"
   then
-    txPrint('^1WARNING: failed to validate custom locale JSON.')
+    txPrint('^1WARNING: load or validate custom locale JSON data from path: '..filePath)
     return false
   end
 

@@ -40,11 +40,7 @@ export const useAuthedFetcher = () => {
     const csrfToken = useCsrfToken();
     const expireSess = useExpireAuthData();
 
-    return async <Resp = any>(
-        fetchUrl: string,
-        fetchOpts: FetcherOpts = {},
-        abortController?: AbortController
-    ) => {
+    return async (fetchUrl: string, fetchOpts: FetcherOpts = {}, abortController?: AbortController) => {
         if (!csrfToken) throw new Error('CSRF token not set');
         //Enforce single slash at the start of the path to prevent CSRF token leak
         if (fetchUrl[0] !== '/' || fetchUrl[1] === '/') {
@@ -70,7 +66,7 @@ export const useAuthedFetcher = () => {
             expireSess('useAuthedFetcher', data?.reason ?? 'unknown');
             throw new Error('Session expired');
         }
-        return data as Resp;
+        return data;
     }
 }
 
@@ -78,24 +74,28 @@ export const useAuthedFetcher = () => {
 /**
  * Simple unauthed fetch with timeout
  */
-type SimpleFetchOpts<Req = any> = FetcherOpts & {
-    body?: Req,
-    timeout?: number
-};
+type SimpleFetchOpts = FetcherOpts & { timeout?: number };
 
-export const fetchWithTimeout = async <Resp = any, Req = any>(url: string, fetchOpts: SimpleFetchOpts<Req> = {}) => {
-    const method = fetchOpts.method ?? 'GET';
-    const body = method === 'POST' && fetchOpts.body
-        ? JSON.stringify(fetchOpts.body)
-        : undefined;
-    const response = await fetch(url, {
-        headers: defaultHeaders,
-        signal: AbortSignal.timeout(fetchOpts.timeout ?? ApiTimeout.DEFAULT),
-        ...fetchOpts,
-        method,
-        body,
-    });
-    return await response.json() as Resp;
+export const fetchWithTimeout = async <T = any>(url: string, fetchOpts: SimpleFetchOpts = {}) => {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => {
+        controller.abort('timeout');
+    }, fetchOpts.timeout ?? ApiTimeout.DEFAULT);
+
+    try {
+        const response = await fetch(url, {
+            headers: defaultHeaders,
+            method: 'GET',
+            // signal: AbortSignal.timeout(fetchOpts.timeout ?? ApiTimeout.DEFAULT),
+            signal: controller.signal, //TODO: replace with the static method above
+            ...fetchOpts,
+        });
+        clearTimeout(timeoutId);
+        return await response.json() as T;
+    } catch (error) {
+        clearTimeout(timeoutId);
+        throw error;
+    }
 };
 
 
@@ -128,7 +128,6 @@ type ApiCallOpts<RespType, ReqType> = {
     }
     success?: (data: RespType, toastId?: string) => void;
     error?: (message: string, toastId?: string) => void;
-    finally?: () => void;
 }
 
 export const useBackendApi = <
@@ -150,6 +149,11 @@ export const useBackendApi = <
     }, []);
 
     return async (opts: ApiCallOpts<RespType, ReqType>) => {
+        //Clearing any previous lingering toast
+        if (currentToastId.current) {
+            txToast.dismiss(currentToastId.current);
+            currentToastId.current = undefined;
+        }
         //The abort controller is not aborted, just forgotten
         abortController.current = new AbortController();
 
@@ -157,12 +161,7 @@ export const useBackendApi = <
         let fetchUrl = hookOpts.path;
         if (opts.pathParams) {
             for (const [key, val] of Object.entries(opts.pathParams)) {
-                const pattern = new RegExp(`/:${key}(/|$)`);
-                const replaced = fetchUrl.replace(pattern, `/${val}$1`);
-                if (replaced === fetchUrl) {
-                    throw new Error(`[useBackendApi] pathParam '${key}' not found in path '${hookOpts.path}'`);
-                }
-                fetchUrl = replaced;
+                fetchUrl = fetchUrl.replace(`/:${key}/`, `/${val.toString()}/`);
             }
         }
         if (opts.queryParams) {
@@ -192,16 +191,13 @@ export const useBackendApi = <
             }
         }
 
-        //Setting up new toast or clear any previous lingering toast
+        //Setting up new toast
         if (opts.toastId && opts.toastLoadingMessage) {
             throw new Error(`[useBackendApi] toastId and toastLoadingMessage are mutually exclusive.`);
         } else if (opts.toastLoadingMessage) {
             currentToastId.current = txToast.loading(opts.toastLoadingMessage);
         } else if (opts.toastId) {
             currentToastId.current = opts.toastId;
-        } else if (currentToastId.current) {
-            txToast.dismiss(currentToastId.current);
-            currentToastId.current = undefined;
         }
 
         //Starting request timeout
@@ -227,7 +223,7 @@ export const useBackendApi = <
                 throw new BackendApiError('API Error', data.error);
             }
 
-            //Auto handler for GenericApiErrorResp & GenericApiOkResp if genericHandler is set
+            //Auto handler for GenericApiOkResp genericHandler
             if (opts.genericHandler && currentToastId.current) {
                 if ('error' in data) {
                     txToast.error({
@@ -280,14 +276,6 @@ export const useBackendApi = <
             } else {
                 console.error('[ERROR]', apiCallDesc, errorMessage);
                 handleError('Request Error', errorMessage);
-            }
-        } finally {
-            if (opts.finally) {
-                try {
-                    opts.finally();
-                } catch (error) {
-                    console.log('[FINALLY CB ERROR]', apiCallDesc, error);
-                }
             }
         }
     }

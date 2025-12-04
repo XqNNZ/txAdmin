@@ -1,12 +1,9 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Input } from "@/components/ui/input";
-import { cn } from "@/lib/utils";
-import { openExternalLink } from '@/lib/navigation';
+import { cn, openExternalLink } from "@/lib/utils";
 import { BookMarkedIcon, FileDownIcon, SearchIcon, Trash2Icon } from "lucide-react";
 import { useAdminPerms } from '@/hooks/auth';
 import { useLiveConsoleHistory } from '@/pages/LiveConsole/liveConsoleHooks';
-import { useAtomValue } from 'jotai';
-import { fxRunnerStateAtom } from '@/hooks/status';
 
 
 type ConsoleFooterButtonProps = {
@@ -53,7 +50,6 @@ export default function LiveConsoleFooter(props: LiveConsoleFooterProps) {
     const termInputRef = props.termInputRef;
     const { hasPerm } = useAdminPerms();
     const hasWritePerm = hasPerm('console.write');
-    const fxRunnerState = useAtomValue(fxRunnerStateAtom);
 
     //autofocus on input when connected
     useEffect(() => {
@@ -112,15 +108,6 @@ export default function LiveConsoleFooter(props: LiveConsoleFooterProps) {
         }
     }
 
-    let inputError: string | undefined;
-    if (!hasWritePerm) {
-        inputError = 'You do not have permission to write to the console.';
-    } else if (!fxRunnerState.isChildAlive) {
-        inputError = 'The server is not running.';
-    } else if (!props.isConnected) {
-        inputError = 'Socket connection lost.';
-    }
-
     return (
         <div className="flex flex-col xs:flex-row xs:items-center gap-2 px-1 sm:px-4 py-2 border-t justify-center">
             <div className="flex items-center grow">
@@ -140,13 +127,10 @@ export default function LiveConsoleFooter(props: LiveConsoleFooterProps) {
                 </svg>
                 <Input
                     ref={termInputRef}
-                    className={cn(
-                        "w-full",
-                        !!inputError && 'placeholder:text-destructive placeholder:opacity-100'
-                    )}
-                    placeholder={inputError ?? "Type a command..."}
+                    className="w-full"
+                    placeholder="Type a command..."
                     type="text"
-                    disabled={!!inputError}
+                    disabled={!props.isConnected || !hasWritePerm}
                     onKeyDown={handleInputKeyDown}
                     autoCapitalize='none'
                     autoComplete='off'

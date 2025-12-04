@@ -9,7 +9,7 @@
         "moduleResolution": "bundler",
         "resolveJsonModule": true,
         "esModuleInterop": true,
-        "outDir": "../.tsc/shared",
+        "outDir": "../tmp_shared_tsc",
 
         "rootDir": "../",
         "baseUrl": "./",
@@ -18,10 +18,7 @@
             "@locale/*": ["../locale/*"],
         },
     },
-    "include": [
-        "**/*",
-        "../locale/*.json"
-    ],
+    "include": ["../locale/*.json", "./*"],
     "references": [
         { "path": "../core" }
     ]

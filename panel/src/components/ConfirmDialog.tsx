@@ -38,7 +38,7 @@ export default function ConfirmDialog() {
         e.preventDefault();
         if (e.key === 'Enter' || e.key === 'NumpadEnter') {
             handleConfirm();
-        } else if (e.key === 'Backspace' || e.key === 'Escape') {
+        } else if(e.key === 'Backspace' || e.key === 'Escape'){
             handleCancel();
         }
     }
@@ -53,15 +53,7 @@ export default function ConfirmDialog() {
 
     return (
         <AlertDialog open={dialogState.isOpen} onOpenChange={handleOpenClose}>
-            <AlertDialogContent
-                ref={modalRef}
-                onOpenAutoFocus={(e) => {
-                    e.preventDefault();
-                    if (e.target && 'querySelector' in e.target && typeof e.target.querySelector === 'function') {
-                        e.target.querySelector('[data-autofocus]')?.focus();
-                    }
-                }}
-            >
+            <AlertDialogContent ref={modalRef}>
                 <AlertDialogHeader>
                     <AlertDialogTitle>{dialogState.title}</AlertDialogTitle>
                     <AlertDialogDescription>
@@ -73,7 +65,7 @@ export default function ConfirmDialog() {
                         {dialogState.cancelLabel ?? 'Cancel'}
                     </AlertDialogCancel>
                     <AlertDialogAction
-                        data-autofocus
+                        autoFocus
                         onKeyDown={handleConfirmKeyDown}
                         onClick={handleConfirm}
                         className={cn(buttonVariants({ variant: dialogState.confirmBtnVariant ?? 'destructive' }))}

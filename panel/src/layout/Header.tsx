@@ -3,10 +3,9 @@ import {
     DropdownMenuContent,
     DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger
 } from "@/components/ui/dropdown-menu";
-import { cn } from "@/lib/utils";
-import { openExternalLink } from '@/lib/navigation';
+import { cn, openExternalLink } from "@/lib/utils";
 import { KeyRoundIcon, LogOutIcon, Menu, Monitor, MoonIcon, PersonStanding, SunIcon } from "lucide-react";
-import DesktopNavbar from "./DesktopNavbar";
+import DesktopHeader from "./DesktopNavbar";
 import Avatar from "@/components/Avatar";
 import { useAuth } from "@/hooks/auth";
 import { useGlobalMenuSheet, usePlayerlistSheet, useServerSheet } from "@/hooks/sheets";
@@ -121,7 +120,9 @@ function AuthedHeaderFragment() {
     const gotoSupportDiscord = () => {
         openExternalLink('https://discord.gg/uAmsGa2');
     }
-    const doLogout = () => logout();
+    const doLogout = () => {
+        logout.mutate();
+    }
 
     return (
         <DropdownMenu>
@@ -180,12 +181,12 @@ function AuthedHeaderFragment() {
 export function Header() {
     return (
         <header className="sticky top-0 z-20 flex flex-col items-center justify-center
-            border-b bg-card text-card-foreground border-card-background shadow-lg md:shadow-sm">
+            border-b bg-card text-card-foreground border-card-background">
             <div className="h-14 lg:px-3 px-2 w-full max-w-[1920px] flex flex-row justify-between transition-all">
                 <div className="flex flex-row items-center flex-grow gap-5 mr-5">
                     <div className="w-sidebar hidden xl:flex justify-center">
                         <NavLink href="/">
-                            {/* <h2 className="text-4xl font-bold text-pink-500 saturate-150">Option XYZ</h2> */}
+                            {/* <h2 className="text-4xl font-bold text-pink-500 saturate-150">Option B</h2> */}
                             <LogoFullSquareGreen className="h-9 hover:scale-105 hover:brightness-110" />
                         </NavLink>
                     </div>
@@ -197,7 +198,7 @@ export function Header() {
                         <ServerTitle />
                     </div>
                     <nav className="hidden lg:block flex-grow">
-                        <DesktopNavbar />
+                        <DesktopHeader />
                     </nav>
                 </div>
 

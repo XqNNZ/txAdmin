@@ -13,6 +13,7 @@ import MainPageLink from '@/components/MainPageLink';
 import { cva } from 'class-variance-authority';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { useAdminPerms } from '@/hooks/auth';
+import { DynamicNewItem } from '@/components/DynamicNewBadge';
 
 const buttonVariants = cva(
     `group inline-flex h-10 w-max items-center justify-center rounded-md px-4 py-2 text-sm font-medium transition-colors focus:outline-none disabled:pointer-events-none disabled:opacity-50 ring-offset-background  focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2`,
@@ -80,7 +81,7 @@ function HeaderMenuItem(props: HeaderMenuLinkProps) {
 
 
 //NOTE: breaking NavigationMenuItem into a separate menu because the dropdown is positioned wrong otherwise
-export default function DesktopNavbar() {
+export default function DesktopHeader() {
     const { hasPerm } = useAdminPerms();
 
     return (

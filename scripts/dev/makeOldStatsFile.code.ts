@@ -4,8 +4,8 @@
  */
 import fs from 'node:fs';
 import { shuffle } from 'd3-array';
-import { PDLChangeEventType, PDLFileType } from '../../core/modules/Metrics/playerDrop/playerDropSchemas';
-import { MultipleCounter } from '../../core/modules/Metrics/statsUtils';
+import { PDLChangeEventType, PDLFileType } from '../../core/components/StatsManager/playerDrop/playerDropSchemas';
+import { MultipleCounter } from '../../core/components/StatsManager/statsUtils';
 
 
 type CountersType = {

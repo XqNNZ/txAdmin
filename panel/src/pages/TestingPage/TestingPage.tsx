@@ -9,18 +9,11 @@ import TmpApi from "./TmpApi";
 import TmpFiller from "./TmpFiller";
 import TmpDndSortable from "./TmpDndSortable";
 import TmpSwr from "./TmpSwr";
-import { useEffect } from "react";
-import TmpJsonEditor from "./TmpJsonEditor";
-import TmpPageHeader from "./TmpPageHeader";
 
 
 export default function TestingPage() {
     const setPageTitle = useSetPageTitle();
     setPageTitle();
-
-    // useEffect(() => {
-    //     return () => console.clear();
-    // }, []);
 
     return <div className="flex flex-col gap-4 w-full">
         <TmpFiller />
@@ -34,10 +27,5 @@ export default function TestingPage() {
         {/* <TmpColors /> */}
         {/* <TmpDndSortable /> */}
         {/* <TmpSwr /> */}
-        {/* <div className="mx-auto">
-            <TmpServerCard />
-        </div> */}
-        {/* <TmpJsonEditor /> */}
-        {/* <TmpPageHeader /> */}
     </div>;
 }

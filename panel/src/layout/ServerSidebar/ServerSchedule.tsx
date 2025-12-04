@@ -5,8 +5,7 @@ import { useOpenPromptDialog } from '@/hooks/dialogs';
 import { useCloseAllSheets } from '@/hooks/sheets';
 import { useGlobalStatus } from '@/hooks/status';
 import { useBackendApi } from '@/hooks/fetch';
-import { cn } from '@/lib/utils';
-import { msToDuration } from '@/lib/dateTime';
+import { cn, msToDuration } from '@/lib/utils';
 import { PenLineIcon, PlayCircleIcon, PlusCircleIcon, XCircleIcon } from 'lucide-react';
 import { useAdminPerms } from '@/hooks/auth';
 

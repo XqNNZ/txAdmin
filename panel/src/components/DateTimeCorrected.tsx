@@ -1,4 +1,4 @@
-import { tsToLocaleDateString, tsToLocaleDateTimeString } from "@/lib/dateTime";
+import { tsToLocaleDateString, tsToLocaleDateTimeString } from "@/lib/utils";
 import { txToast } from "./TxToaster";
 
 const clockSkewTolerance = 5 * 60; //5 minutes

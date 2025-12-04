@@ -5,8 +5,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { useAdminPerms } from "@/hooks/auth";
 import { useBackendApi } from "@/hooks/fetch";
 import { PlayerModalRefType } from "@/hooks/playerModal";
-import { cn } from "@/lib/utils";
-import { msToDuration, tsToLocaleDateTimeString } from "@/lib/dateTime";
+import { cn, msToDuration, tsToLocaleDateTimeString } from "@/lib/utils";
 import { GenericApiOkResp } from "@shared/genericApiTypes";
 import { PlayerModalPlayerData } from "@shared/playerApiTypes";
 import { ShieldAlertIcon } from "lucide-react";
@@ -17,17 +16,15 @@ function LogActionCounter({ type, count }: { type: 'Ban' | 'Warn' | 'Kick', coun
     const pluralLabel = (count > 1) ? `${type}s` : type;
     if (count === 0) {
         return <span className={cn(
-            'h-max rounded-sm text-xs font-semibold px-1 py-[0.125rem] tracking-widest text-center inline-block',
+            'rounded-sm text-xs font-semibold px-1 py-[0.125rem] tracking-widest text-center inline-block',
             'bg-secondary text-secondary-foreground'
         )}>
             0 {type}s
         </span>
     } else {
         return <span className={cn(
-            'h-max rounded-sm text-xs font-semibold px-1 py-[0.125rem] tracking-widest text-center inline-block',
-            type === 'Ban' ? 'bg-destructive text-destructive-foreground' : 
-            type === 'Kick' ? 'bg-info text-info-foreground' : 
-            'bg-warning text-warning-foreground'
+            'rounded-sm text-xs font-semibold px-1 py-[0.125rem] tracking-widest text-center inline-block',
+            type === 'Ban' ? 'bg-destructive text-destructive-foreground' : 'bg-warning text-warning-foreground'
         )}>
             {count} {pluralLabel}
         </span>
@@ -245,7 +242,7 @@ export default function PlayerInfoTab({ playerRef, player, serverTime, tsFetch, 
             </div>
             <div className="py-0.5 grid grid-cols-3 gap-4 px-0">
                 <dt className="text-sm font-medium leading-6 text-muted-foreground">Sanctions</dt>
-                <dd className="text-sm leading-6 mt-0 flex flex-wrap gap-2">
+                <dd className="text-sm leading-6 mt-0 space-x-2">
                     <LogActionCounter type="Ban" count={banCount} />
                     <LogActionCounter type="Kick" count={kickCount} />
                     <LogActionCounter type="Warn" count={warnCount} />

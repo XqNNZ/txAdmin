@@ -8,8 +8,7 @@ import { useAtomValue } from 'jotai';
 import { dashPerfCursorAtom, dashSvRuntimeAtom, useGetDashDataAge } from './dashboardHooks';
 import * as d3ScaleChromatic from 'd3-scale-chromatic';
 import { SvRtPerfThreadNamesType } from '@shared/otherTypes';
-import { cn } from '@/lib/utils';
-import { dateToLocaleDateString, dateToLocaleTimeString, isDateToday } from '@/lib/dateTime';
+import { cn, dateToLocaleDateString, dateToLocaleTimeString, isDateToday } from '@/lib/utils';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 
@@ -28,25 +27,6 @@ type ThreadPerfChartProps = {
     minTickIntervalMarker: number | undefined;
     width: number;
     height: number;
-};
-
-
-/**
- * Constants
- */
-//NOTE: numbers from fivem/code/components/citizen-server-impl/src/GameServer.cpp
-const PERF_MIN_TICK_TIME = {
-    //svMain - 20fps, 50ms/tick
-    //svNetwork - 100fps, 10ms/tick
-    //svSync - 120fps, 8.3ms/tick
-
-    svMain: (1000 / 20) / 1000,
-    // svNetwork: (1000 / 100) / 1000,
-    // svSync: (1000 / 120) / 1000,
-
-    //NOTE: forcing wrong numbers because the chart colors are wrong
-    svNetwork: (1000 / 40) / 1000, //25ms/tick
-    svSync: (1000 / 40) / 1000, //25ms/tick
 };
 
 
@@ -185,7 +165,7 @@ export default function ThreadPerfCard() {
         if (!svRuntimeData || getDashDataAge().isExpired) return null;
 
         //Data completeness check
-        if (!svRuntimeData.perfBoundaries || !svRuntimeData.perfBucketCounts) {
+        if (!svRuntimeData.perfBoundaries || !svRuntimeData.perfBucketCounts || !svRuntimeData.perfMinTickTime) {
             return 'incomplete';
         }
 
@@ -194,8 +174,8 @@ export default function ThreadPerfCard() {
             : selectedThread
             ?? 'svMain') as SvRtPerfThreadNamesType;
 
-        const { perfBoundaries, perfBucketCounts } = svRuntimeData;
-        const minTickInterval = PERF_MIN_TICK_TIME[threadName];
+        const { perfBoundaries, perfBucketCounts, perfMinTickTime } = svRuntimeData;
+        const minTickInterval = perfMinTickTime[threadName];
         const minTickIntervalMarker = getMinTickIntervalMarker(perfBoundaries, minTickInterval);
         const minTickIntervalIndex = perfBoundaries.findIndex(b => b === minTickIntervalMarker);
         let colorFunc: (bucketNum: number) => string;
@@ -240,7 +220,7 @@ export default function ThreadPerfCard() {
         if (!svRuntimeData || dataAge.isExpired) return null;
 
         //Data completeness check
-        if (!svRuntimeData.perfBoundaries || !svRuntimeData.perfBucketCounts) {
+        if (!svRuntimeData.perfBoundaries || !svRuntimeData.perfBucketCounts || !svRuntimeData.perfMinTickTime) {
             return null;
         }
 

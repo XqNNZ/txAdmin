@@ -16,16 +16,12 @@ import SystemLogPage from "@/pages/SystemLogPage";
 import AddLegacyBanPage from "@/pages/AddLegacyBanPage";
 import DashboardPage from "@/pages/Dashboard/DashboardPage";
 import PlayerDropsPage from "@/pages/PlayerDropsPage/PlayerDropsPage";
-import SettingsPage from "@/pages/Settings/SettingsPage";
-import { useAdminPerms } from "@/hooks/auth";
-import UnauthorizedPage from "@/pages/UnauthorizedPage";
 
 
 type RouteType = {
     path: string;
     title: string;
-    permission?: string;
-    Page: JSX.Element;
+    children: JSX.Element;
 };
 
 const allRoutes: RouteType[] = [
@@ -33,117 +29,106 @@ const allRoutes: RouteType[] = [
     {
         path: '/players',
         title: 'Players',
-        Page: <PlayersPage />
+        children: <PlayersPage />
     },
     {
         path: '/history',
         title: 'History',
-        Page: <HistoryPage />
+        children: <HistoryPage />
     },
     {
         path: '/insights/player-drops',
         title: 'Player Drops',
-        Page: <PlayerDropsPage />
+        children: <PlayerDropsPage />
     },
     {
         path: '/whitelist',
         title: 'Whitelist',
-        Page: <Iframe legacyUrl="whitelist" />
+        children: <Iframe legacyUrl="whitelist" />
     },
     {
         path: '/admins',
         title: 'Admins',
-        Page: <Iframe legacyUrl="adminManager" />
+        children: <Iframe legacyUrl="adminManager" />
     },
     {
         path: '/settings',
         title: 'Settings',
-        permission: 'settings.view',
-        Page: <SettingsPage />
+        children: <Iframe legacyUrl="settings" />
     },
     {
         path: '/system/master-actions',
         title: 'Master Actions',
-        //NOTE: content is readonly for unauthorized accounts
-        Page: <Iframe legacyUrl="masterActions" />
+        children: <Iframe legacyUrl="masterActions" />
     },
     {
         path: '/system/diagnostics',
         title: 'Diagnostics',
-        Page: <Iframe legacyUrl="diagnostics" />
+        children: <Iframe legacyUrl="diagnostics" />
     },
     {
         path: '/system/console-log',
         title: 'Console Log',
-        permission: 'txadmin.log.view',
-        Page: <SystemLogPage pageName="console" />
+        children: <SystemLogPage pageName="console" />
     },
     {
         path: '/system/action-log',
         title: 'Action Log',
-        permission: 'txadmin.log.view',
-        Page: <SystemLogPage pageName="action" />
+        children: <SystemLogPage pageName="action" />
     },
 
     //Server Routes
     {
         path: '/',
         title: 'Dashboard',
-        Page: <DashboardPage />
+        children: <DashboardPage />
     },
     {
         path: '/server/console',
         title: 'Live Console',
-        permission: 'console.view',
-        Page: <LiveConsolePage />
+        children: <LiveConsolePage />
     },
     {
         path: '/server/resources',
         title: 'Resources',
-        Page: <Iframe legacyUrl="resources" />
+        children: <Iframe legacyUrl="resources" />
     },
     {
         path: '/server/server-log',
         title: 'Server Log',
-        permission: 'server.log.view',
-        Page: <Iframe legacyUrl="serverLog" />
+        children: <Iframe legacyUrl="serverLog" />
     },
     {
         path: '/server/cfg-editor',
         title: 'CFG Editor',
-        permission: 'server.cfg.editor',
-        Page: <Iframe legacyUrl="cfgEditor" />
+        children: <Iframe legacyUrl="cfgEditor" />
     },
     {
         path: '/server/setup',
         title: 'Server Setup',
-        permission: 'master', //FIXME: eithger change to all_permissions or create a new Setup/Deploy permission
-        Page: <Iframe legacyUrl="setup" />
+        children: <Iframe legacyUrl="setup" />
     },
     {
         path: '/server/deployer',
         title: 'Server Deployer',
-        permission: 'master', //FIXME: eithger change to all_permissions or create a new Setup/Deploy permission
-        Page: <Iframe legacyUrl="deployer" />
+        children: <Iframe legacyUrl="deployer" />
     },
     {
         path: '/advanced',
         title: 'Advanced',
-        permission: 'all_permissions',
-        Page: <Iframe legacyUrl="advanced" />
+        children: <Iframe legacyUrl="advanced" />
     },
 
     //No nav routes
     {
         path: '/settings/ban-templates',
         title: 'Ban Templates',
-        //NOTE: content is readonly for unauthorized accounts
-        Page: <BanTemplatesPage />
+        children: <BanTemplatesPage />
     },
     {
         path: '/ban-identifiers',
         title: 'Ban Identifiers',
-        Page: <AddLegacyBanPage />
+        children: <AddLegacyBanPage />
     },
     //FIXME: decide on how to organize the url for the player drops page - /server/ prefix?
     //       This will likely be a part of the insights page, eventually
@@ -155,29 +140,10 @@ const allRoutes: RouteType[] = [
 ];
 
 
-function Route(route: RouteType) {
-    const { hasPerm } = useAdminPerms();
+function Route(props: RouteType) {
     const setPageTitle = useSetPageTitle();
-    setPageTitle(route.title);
-    const nodeToRender = route.permission && !hasPerm(route.permission)
-        ? <UnauthorizedPage pageName={route.title} permission={route.permission} />
-        : route.Page;
-    return <WouterRoute path={route.path}>{nodeToRender}</WouterRoute>
-}
-
-
-export function MainRouterInner() {
-    return (
-        <Switch>
-            {allRoutes.map((route) => <Route key={route.path} {...route} />)}
-
-            {/* Other Routes - they need to set the title manuually */}
-            {import.meta.env.DEV && (
-                <WouterRoute path="/test"><TestingPage /></WouterRoute>
-            )}
-            <WouterRoute component={NotFound} />
-        </Switch>
-    );
+    setPageTitle(props.title);
+    return <WouterRoute path={props.path}>{props.children}</WouterRoute>
 }
 
 
@@ -199,7 +165,19 @@ export default function MainRouter() {
                 setPageErrorStatus(false);
             }}
         >
-            <MainRouterInner />
+            <Switch>
+                {allRoutes.map((route) => (
+                    <Route key={route.path} path={route.path} title={route.title}>
+                        {route.children}
+                    </Route>
+                ))}
+
+                {/* Other Routes - they need to set the title manuually */}
+                {import.meta.env.DEV && (
+                    <WouterRoute path="/test"><TestingPage /></WouterRoute>
+                )}
+                <WouterRoute component={NotFound} />
+            </Switch>
         </ErrorBoundary>
     );
 }

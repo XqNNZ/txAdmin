@@ -70,11 +70,15 @@ CreateThread(function()
     end
 
     logger('tx', 'LoggerStarted', {
-        --txAdmin.metrics.playerDrops data
+        --txAdmin.statsManager.playerDrops data
         gameName = GetConvar('gamename', 'gta5'),
         gameBuild = GetConvar('sv_enforceGameBuild', 'invalid'),
         fxsVersion = GetConvar('version', 'invalid'),
         resources = resList,
+
+        --not being used anywhere for now
+        projectName = GetConvar('sv_projectName', 'invalid')
+        --NOTE: unmfortunately its not possible to retrieve the server icon
     })
 end)
 

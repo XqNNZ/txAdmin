@@ -5,10 +5,5 @@
     "moduleResolution": "Node",
     "allowSyntheticDefaultImports": true
   },
-  "include": [
-    "vite.config.ts",
-    "../scripts/build/config.ts",
-    "../scripts/build/utils.ts",
-    "../shared/txDevEnv.ts",
-  ]
+  "include": ["vite.config.ts"]
 }

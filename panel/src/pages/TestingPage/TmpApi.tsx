@@ -4,6 +4,8 @@ import { BackendApiError, useBackendApi } from "@/hooks/fetch";
 import { ApiToastResp } from "@shared/genericApiTypes";
 
 
+
+
 export default function TmpApi() {
     type FxsControlReqType = {
         action: 'start' | 'stop' | 'restart';
@@ -31,7 +33,7 @@ export default function TmpApi() {
             if (error instanceof BackendApiError) {
                 alert(`Error: ${error.title}: ${error.message}`);
             } else {
-                alert(`Error: ${JSON.stringify((error as Error).message)}`);
+                alert(`Error: ${JSON.stringify(error)}`);
             }
         }
     }

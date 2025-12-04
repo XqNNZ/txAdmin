@@ -53,21 +53,15 @@ end
 RegisterCommand('txaInitialData', function(source, args)
     -- sanity check
     if type(args[1]) ~= 'string' then
-        return txPrintError('[txaInitialData] invalid argument types', type(args[1]))
+        return logError('Invalid arguments for txaEvent')
     end
-
     -- prevent execution from admins or resources
-    if source ~= 0 then
-        return txPrintError('[txaInitialData] unexpected source', source)
-    end
-    if GetInvokingResource() ~= nil then
-        return txPrintError('[txaInitialData] unexpected invoking resource', GetInvokingResource())
-    end
+    if source ~= 0 or GetInvokingResource() ~= nil then return end
 
     -- processing event
-    local initialData = json.decode(replaceSemicolon(args[1]))
+    local initialData = json.decode(unDeQuote(args[1]))
     if not initialData or type(initialData.netId) ~= 'number' then
-        return txPrintError('[txaInitialData] invalid eventData', args[1])
+        return logError('Invalid arguments for txaEvent: ' .. args[1])
     end
     cacheData(initialData)
     CancelEvent()

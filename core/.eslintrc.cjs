@@ -5,6 +5,7 @@ module.exports = {
         es2017: true,
     },
     globals: {
+        globals: 'writable',
         GlobalData: 'writable',
         ExecuteCommand: 'readonly',
         GetConvar: 'readonly',

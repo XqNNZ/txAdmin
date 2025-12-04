@@ -1,19 +1,10 @@
-import path from 'node:path';
 import { visualizer } from "rollup-plugin-visualizer";
+import path from 'node:path';
 import { PluginOption, UserConfig, defineConfig } from 'vite';
 import react from '@vitejs/plugin-react-swc';
 // import tsconfigPaths from 'vite-tsconfig-paths';
-import { licenseBanner } from '../scripts/build/utils';
-import { parseTxDevEnv } from '../shared/txDevEnv';
-process.loadEnvFile('../.env');
-
-//Check if TXDEV_VITE_URL is set
-const txDevEnv = parseTxDevEnv();
-if (!txDevEnv.VITE_URL) {
-    console.error('Missing TXDEV_VITE_URL env variable.');
-    process.exit(1);
-}
-
+import config from '../.deploy.config.js';
+import { licenseBanner } from '../scripts/scripts-utils.js';
 
 const baseConfig = {
     build: {
@@ -31,9 +22,9 @@ const baseConfig = {
                 banner: licenseBanner('..', true),
                 //Adding hash to help with cache busting
                 hashCharacters: 'base36',
-                entryFileNames: `[name]-[hash].v800.js`,
-                chunkFileNames: `[name]-[hash].v800.js`,
-                assetFileNames: '[name]-[hash].v800.[ext]',
+                entryFileNames: `[name]-[hash].js`,
+                chunkFileNames: `[name]-[hash].js`,
+                assetFileNames: '[name]-[hash].[ext]',
             }
         },
     },
@@ -43,6 +34,9 @@ const baseConfig = {
     base: '',
     clearScreen: false,
     plugins: [
+        // tsconfigPaths({
+        //     projects: ['./', '../shared']
+        // }),
         react(),
         visualizer({
             // template: 'flamegraph',
@@ -62,7 +56,7 @@ const baseConfig = {
 // https://vitejs.dev/config/
 export default defineConfig(({ command }) => {
     if (command === 'serve') {
-        baseConfig.server.origin = txDevEnv.VITE_URL;
+        baseConfig.server.origin = config.panelViteUrl;
         baseConfig.build.rollupOptions.input = './src/main.tsx'; // overwrite default .html entry
         return baseConfig;
     } else {

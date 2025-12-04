@@ -1,4 +1,5 @@
 import { ApiLogoutResp, ReactAuthDataType } from '@shared/authApiTypes';
+import { useMutation } from '@tanstack/react-query';
 import { atom, useAtom, useAtomValue, useSetAtom } from 'jotai';
 import { atomEffect } from 'jotai-effect';
 import { accountModalOpenAtom, confirmDialogOpenAtom, promptDialogOpenAtom } from './dialogs';
@@ -8,10 +9,9 @@ import { globalStatusAtom } from './status';
 import { txToast } from '@/components/TxToaster';
 import { actionModalOpenAtom } from './actionModal';
 import { dashDataTsAtom, dashPerfCursorAtom, dashPlayerDropAtom, dashServerStatsAtom, dashSvRuntimeAtom } from '@/pages/Dashboard/dashboardHooks';
-import { redirectToLogin } from '@/lib/navigation';
+import { redirectToLogin } from '@/lib/utils';
 import { LogoutReasonHash } from '@/pages/auth/Login';
-import { mutate } from 'swr';
-import { fetchWithTimeout } from './fetch';
+import { mutate } from 'swr'
 
 
 /**
@@ -52,7 +52,7 @@ export const useSetAuthData = () => {
 };
 
 //Admin permissions hook, only re-renders on perms change or login/logout
-//Perms logic from core/modules/WebServer/authLogic.ts
+//Perms logic from core/components/WebServer/authLogic.ts
 export const useAdminPerms = () => {
     const permsData = useAtomValue(adminPermissionsAtom);
 
@@ -96,22 +96,25 @@ export const useExpireAuthData = () => {
 export const useAuth = () => {
     const [authData, setAuthData] = useAtom(authDataAtom);
 
-    const logout = () => fetchWithTimeout<ApiLogoutResp>(`/auth/logout`, { method: 'POST' }).then(data => {
-        if (data.logout) {
-            console.log('[useAuth] Manually triggered logout.');
-            setAuthData(false);
-            redirectToLogin(LogoutReasonHash.LOGOUT);
-        } else {
-            console.error('Failed to logout:', data);
-        }
-    }).catch(error => {
-        console.log('Error sending logout request:', error);
+    const logoutMutation = useMutation<ApiLogoutResp>({
+        mutationKey: ['auth'],
+        mutationFn: () => fetch('/auth/logout', { method: 'POST' }).then(res => res.json()),
+        onSuccess: (data) => {
+            if (data.logout) {
+                console.log('[useAuth] Manually triggered logout.');
+                setAuthData(false);
+                redirectToLogin(LogoutReasonHash.LOGOUT);
+            }
+        },
     });
 
     return {
         authData,
         setAuthData,
-        logout,
+        logout: {
+            mutate: logoutMutation.mutate,
+            isLoading: logoutMutation.isPending,
+        }
     }
 };
 

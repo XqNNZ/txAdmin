@@ -69,8 +69,8 @@ export type PlayersSearchBoxReturnStateType = {
 }
 
 type PlayerSearchBoxProps = {
-    doSearch: (search: PlayersTableSearchType, filters: PlayersTableFiltersType, rememberSearchType: boolean) => void;
-    initialState: PlayersSearchBoxReturnStateType & { rememberSearchType: boolean };
+    doSearch: (search: PlayersTableSearchType, filters: PlayersTableFiltersType) => void;
+    initialState: PlayersSearchBoxReturnStateType;
 };
 
 export function PlayerSearchBox({ doSearch, initialState }: PlayerSearchBoxProps) {
@@ -80,16 +80,11 @@ export function PlayerSearchBox({ doSearch, initialState }: PlayerSearchBoxProps
     const [currSearchType, setCurrSearchType] = useState<string>(initialState.search.type);
     const [selectedFilters, setSelectedFilters] = useState<string[]>(initialState.filters);
     const [hasSearchText, setHasSearchText] = useState(!!initialState.search.value);
-    const [rememberSearchType, setRememberSearchType] = useState(initialState.rememberSearchType);
 
     const updateSearch = () => {
         if (!inputRef.current) return;
         const searchValue = inputRef.current.value.trim();
-        doSearch(
-            { value: searchValue, type: currSearchType },
-            selectedFilters,
-            rememberSearchType,
-        );
+        doSearch({ value: searchValue, type: currSearchType }, selectedFilters);
     }
 
     //Call onSearch when params change
@@ -197,14 +192,6 @@ export function PlayerSearchBox({ doSearch, initialState }: PlayerSearchBoxProps
                                     </DropdownMenuRadioItem>
                                 ))}
                             </DropdownMenuRadioGroup>
-                            <DropdownMenuSeparator />
-                            <DropdownMenuCheckboxItem
-                                checked={rememberSearchType}
-                                className="cursor-pointer"
-                                onCheckedChange={setRememberSearchType}
-                            >
-                                Remember Option
-                            </DropdownMenuCheckboxItem>
                         </DropdownMenuContent>
                     </DropdownMenu>
 
@@ -250,7 +237,7 @@ export function PlayerSearchBox({ doSearch, initialState }: PlayerSearchBoxProps
 
                     <div className="flex justify-end flex-grow">
                         <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
+                            <DropdownMenuTrigger className="">
                                 <Button variant="outline" className="grow md:grow-0">
                                     More
                                     <ChevronDownIcon className="ml-2 h-4 w-4 shrink-0 opacity-50" />

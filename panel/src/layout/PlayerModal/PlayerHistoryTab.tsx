@@ -1,5 +1,4 @@
-import { cn } from "@/lib/utils";
-import { tsToLocaleDateTimeString } from "@/lib/dateTime";
+import { cn, tsToLocaleDateTimeString } from "@/lib/utils";
 import { PlayerHistoryItem } from "@shared/playerApiTypes";
 import InlineCode from "@/components/InlineCode";
 import { useOpenActionModal } from "@/hooks/actionModal";
@@ -13,19 +12,15 @@ type HistoryItemProps = {
 }
 
 function HistoryItem({ action, serverTime, modalOpener }: HistoryItemProps) {
-    // Check if action is older than 3 months (90 days = 7,776,000 seconds)
-    const threeMonthsAgo = serverTime - (90 * 24 * 60 * 60);
-    const isOlderThan3Months = action.ts < threeMonthsAgo;
-
     let footerNote, borderColorClass, actionMessage;
     if (action.type === 'ban') {
-        borderColorClass = isOlderThan3Months ? 'border-muted' : 'border-destructive';
+        borderColorClass = 'border-destructive';
         actionMessage = `BANNED by ${action.author}`;
     } else if (action.type === 'warn') {
-        borderColorClass = isOlderThan3Months ? 'border-muted' : 'border-warning';
+        borderColorClass = 'border-warning';
         actionMessage = `WARNED by ${action.author}`;
     } else if (action.type === 'kick') {
-        borderColorClass = isOlderThan3Months ? 'border-muted' : 'border-info';
+        borderColorClass = 'border-info';
         actionMessage = `KICKED by ${action.author}`;
     }
     if (action.revokedBy) {
@@ -42,15 +37,11 @@ function HistoryItem({ action, serverTime, modalOpener }: HistoryItemProps) {
             onClick={() => { modalOpener(action.id) }}
             className={cn(
                 'pl-2 border-l-4 hover:bg-muted rounded-r-sm bg-muted/30 cursor-pointer',
-                borderColorClass,
-                isOlderThan3Months && 'opacity-60 grayscale'
+                borderColorClass
             )}
         >
             <div className="flex w-full justify-between">
-                <strong className={cn(
-                    'text-sm',
-                    isOlderThan3Months ? 'text-muted-foreground' : 'text-foreground'
-                )}>{actionMessage}</strong>
+                <strong className="text-sm text-muted-foreground">{actionMessage}</strong>
                 <small className="text-right text-2xs space-x-1">
                     <InlineCode className="tracking-widest">{action.id}</InlineCode>
                     <span
@@ -59,15 +50,9 @@ function HistoryItem({ action, serverTime, modalOpener }: HistoryItemProps) {
                     >
                         {tsToLocaleDateTimeString(action.ts, 'medium', 'short')}
                     </span>
-                    {isOlderThan3Months && (
-                        <span className="text-muted-foreground italic">(3+ months old)</span>
-                    )}
                 </small>
             </div>
-            <span className={cn(
-                'text-sm',
-                isOlderThan3Months && 'text-muted-foreground'
-            )}>{action.reason}</span>
+            <span className="text-sm">{action.reason}</span>
             {footerNote && <small className="block text-xs opacity-75">{footerNote}</small>}
         </div>
     );

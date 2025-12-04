@@ -134,7 +134,7 @@ RegisterNetEvent('txcl:setDrunk', function()
     if IS_FIVEM then
         -- oops nothing happened 🤭
     else
-        -- oops nothing happened 🤭
+        drunkThreadRedm()
     end
 end)
 

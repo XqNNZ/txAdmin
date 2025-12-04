@@ -1,6 +1,5 @@
 import MarkdownProse from "@/components/MarkdownProse";
-import { cn } from "@/lib/utils";
-import { handleExternalLinkClick } from "@/lib/navigation";
+import { cn, handleExternalLinkClick } from "@/lib/utils";
 import { cva } from "class-variance-authority";
 import { AlertCircleIcon, AlertOctagonIcon, CheckCircleIcon, ChevronRightCircle, InfoIcon, Loader2Icon, XIcon } from "lucide-react";
 import toast, { Toast, Toaster } from "react-hot-toast";
@@ -8,7 +7,9 @@ import { useEffect, useState } from "react";
 import { ApiToastResp } from "@shared/genericApiTypes";
 
 
-//MARK: Types
+/**
+ * Types
+ */
 export const validToastTypes = ['default', 'loading', 'info', 'success', 'warning', 'error'] as const;
 type TxToastType = typeof validToastTypes[number];
 
@@ -24,7 +25,9 @@ type TxToastOptions = {
 }
 
 
-//MARK: Components
+/**
+ * Components
+ */
 const toastBarVariants = cva(
     `max-w-xl w-full sm:w-auto sm:min-w-[28rem] relative overflow-hidden z-40
     p-3 pr-10 flex items-center justify-between space-x-4
@@ -99,8 +102,8 @@ export const CustomToast = ({ t, type, data }: CustomToastProps) => {
                     <span className="block whitespace-pre-line">{data}</span>
                 ) : data.md ? (
                     <>
-                        {data.title ? <MarkdownProse md={`**${data.title}**`} isSmall isTitle isToast /> : null}
-                        <MarkdownProse md={data.msg} isSmall isToast />
+                        {data.title ? <MarkdownProse md={`**${data.title}**`} isSmall isTitle /> : null}
+                        <MarkdownProse md={data.msg} isSmall />
                     </>
                 ) : (
                     <>
@@ -137,48 +140,29 @@ export default function TxToaster() {
     return <Toaster
         reverseOrder={true}
         containerStyle={{
-            top: 'var(--content-offset)',
+            top: 'calc(4.5rem + 1px)',
             zIndex: 60,
         }}
     />
 }
 
 
-//MARK: Utilities
 /**
- * Returns a toast with the given type
+ * Utilities
  */
+//Returns a toast with the given type
 const callToast = (type: TxToastType, data: TxToastData, options: TxToastOptions = {}) => {
-    const msg = typeof data === 'string' ? data : data.msg;
-    const msgWords = msg.split(/\s+/).length;
-    let defaultDuration: number;
-    if (msgWords < 15) {
-        defaultDuration = 5_000;
-    } else if (msgWords < 25) {
-        defaultDuration = 7_500;
-    } else if (msgWords < 50) {
-        defaultDuration = 10_000;
-    } else {
-        defaultDuration = 15_000;
-    }
-    options.duration ??= type === 'loading' ? Infinity : defaultDuration;
+    options.duration ??= type === 'loading' ? Infinity : 5_000;
     return toast.custom((t: Toast) => {
         return <CustomToast t={t} type={type} data={data} />;
     }, options);
 }
 
-
-/**
- * Calls a toast with the given type
- */
+//Public interface
 const genericToast = (data: ApiToastResp & { title?: string }, options?: TxToastOptions) => {
     return callToast(data.type, data, options);
 }
 
-
-/**
- * Global Toast Caller, as function or as object with specific types.
- */
 export const txToast = Object.assign(genericToast, {
     default: (data: TxToastData, options?: TxToastOptions) => callToast('default', data, options),
     loading: (data: TxToastData, options?: TxToastOptions) => callToast('loading', data, options),

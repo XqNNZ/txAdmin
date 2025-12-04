@@ -1,11 +1,11 @@
 import { useState } from "react";
-import type { DatabaseActionType } from "../../../../core/modules/Database/databaseTypes";
+import { DatabaseActionType } from "../../../../core/components/PlayerDatabase/databaseTypes";
 import { Button } from "@/components/ui/button";
 import { GenericApiOkResp } from "@shared/genericApiTypes";
 import { useAdminPerms } from "@/hooks/auth";
 import { Loader2Icon } from "lucide-react";
 import { useBackendApi } from "@/hooks/fetch";
-import type { ApiRevokeActionReqSchema } from "../../../../core/routes/history/actions";
+import { ApiRevokeActionReqSchema } from "../../../../core/webroutes/history/actions";
 
 
 type ActionModifyTabProps = {
@@ -40,11 +40,7 @@ export default function ActionModifyTab({ action, refreshModalData }: ActionModi
     }
 
     const isAlreadyRevoked = !!action.revocation.timestamp;
-    const hasRevokePerm = hasPerm(
-        action.type === 'warn' ? 'players.warn' : 
-        action.type === 'kick' ? 'players.kick' : 
-        'players.ban'
-    );
+    const hasRevokePerm = hasPerm(action.type === 'warn' ? 'players.warn' : 'players.ban');
     const revokeBtnLabel = isAlreadyRevoked
         ? `${action.type} revoked`
         : hasRevokePerm

@@ -6,11 +6,8 @@ import { useSetDashboardData } from './dashboardHooks';
 import { getSocket } from '@/lib/utils';
 import ServerStatsCard from './ServerStatsCard';
 import { useAtomValue } from 'jotai';
-import { txConfigStateAtom } from '@/hooks/status';
+import { serverConfigPendingStepAtom } from '@/hooks/status';
 import { useLocation } from 'wouter';
-import { TxConfigState } from '@shared/enums';
-import ModalCentralMessage from '@/components/ModalCentralMessage';
-import GenericSpinner from '@/components/GenericSpinner';
 
 
 function DashboardPageInner() {
@@ -70,21 +67,15 @@ function DashboardPageInner() {
 
 
 export default function DashboardPage() {
-    const txConfigState = useAtomValue(txConfigStateAtom);
+    const serverConfigPendingStep = useAtomValue(serverConfigPendingStepAtom);
     const setLocation = useLocation()[1];
 
-    if (txConfigState === TxConfigState.Setup) {
+    if (serverConfigPendingStep === 'setup') {
         setLocation('/server/setup');
         return null;
-    } else if (txConfigState === TxConfigState.Deployer) {
+    } else if (serverConfigPendingStep === 'deployer') {
         setLocation('/server/deployer');
         return null;
-    } else if (txConfigState !== TxConfigState.Ready) {
-        return <div className='size-full'>
-            <ModalCentralMessage>
-            <GenericSpinner msg={`Unknown Config State: ${String(txConfigState)}`} />
-        </ModalCentralMessage>
-        </div>;
     } else {
         return <DashboardPageInner />;
     }

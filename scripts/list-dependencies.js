@@ -18,9 +18,27 @@ console.clear();
 console.log('Scanning for dependencies in:', chalk.blue(targetPath));
 
 
-//NOTE: To generate this list, use `node -pe "require('repl')._builtinLibs"` in both node16 and 22, then merge them.
+//node -pe "require('repl')._builtinLibs"
 const builtInModules = [
-    'assert', 'assert/strict', 'async_hooks', 'buffer', 'child_process', 'cluster', 'console', 'constants', 'crypto', 'dgram', 'diagnostics_channel', 'dns', 'dns/promises', 'domain', 'events', 'fs', 'fs/promises', 'http', 'http2', 'https', 'inspector', 'inspector/promises', 'module', 'net', 'os', 'path', 'path/posix', 'path/win32', 'perf_hooks', 'process', 'punycode', 'querystring', 'readline', 'readline/promises', 'repl', 'stream', 'stream/consumers', 'stream/promises', 'stream/web', 'string_decoder', 'sys', 'test/reporters', 'timers', 'timers/promises', 'tls', 'trace_events', 'tty', 'url', 'util', 'util/types', 'v8', 'vm', 'wasi', 'worker_threads', 'zlib'
+    'assert', 'assert/strict', 'async_hooks',
+    'buffer', 'child_process', 'cluster',
+    'console', 'constants', 'crypto',
+    'dgram', 'diagnostics_channel', 'dns',
+    'dns/promises', 'domain', 'events',
+    'fs', 'fs/promises', 'http',
+    'http2', 'https', 'inspector',
+    'inspector/promises', 'module', 'net',
+    'os', 'path', 'path/posix',
+    'path/win32', 'perf_hooks', 'process',
+    'punycode', 'querystring', 'readline',
+    'readline/promises', 'repl', 'stream',
+    'stream/consumers', 'stream/promises', 'stream/web',
+    'string_decoder', 'sys', 'test/reporters',
+    'timers', 'timers/promises', 'tls',
+    'trace_events', 'tty', 'url',
+    'util', 'util/types', 'v8',
+    'vm', 'wasi', 'worker_threads',
+    'zlib'
 ];
 
 
@@ -30,12 +48,8 @@ const ignoredPrefixes = [
     'node:',
     './',
     '../',
-    '@shared',
-    '@utils',
-    '@logic',
-    '@modules',
-    '@routes',
-    '@core',
+    '@core/',
+    '@extras/',
     '@locale/',
     '@nui/',
     '@shared/',
@@ -54,11 +68,7 @@ const processFile = (filePath) => {
             console.log(chalk.red(`[ERROR] builtin module '${importedModule}' without 'node:' from: ${filePath}`));
             continue;
         }
-        if (importedModule === '.') {
-            console.log(chalk.red(`[ERROR] Invalid import in file: ${filePath}: ${importedModule}`));
-            continue;
-        }
-        if (!dependencies.has(importedModule)) {
+        if (!dependencies.has(importedModule)){
             console.log(chalk.yellow(`[WARN] imported module '${importedModule}' not found in package.json`));
             continue;
         }

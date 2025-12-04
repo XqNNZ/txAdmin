@@ -4,7 +4,9 @@
         "humanizer_language": "hu"
     },
     "restarter": {
-        "server_unhealthy_kick_reason": "a szervert újra kell indítani, kérlek csatlakozz újra",
+        "start_timeout": "sikertelen indítás a megadott idő intervallumon belül",
+        "crash_detected": "összeomlás észlelve",
+        "hang_detected": "lefagyás észlelve",
         "partial_hang_warn": "Részleges lefagyás miatt a szerver 1 perc múlva újraindul. Kérjük, lépj ki.",
         "partial_hang_warn_discord": "Részleges lefagyás miatt, a **%{servername}** 1 perc múlva újraindul.",
         "schedule_reason": "Ütemezett újraindítás %{time}",

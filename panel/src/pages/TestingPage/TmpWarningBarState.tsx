@@ -47,7 +47,7 @@ export default function TmpWarningBarState() {
                         })}>
                             txa Major Update
                         </Button>
-                        <Button size="sm" onClick={() => setTxUpdateData(undefined)}>
+                        <Button size="sm" onClick={() => setTxUpdateData(false)}>
                             txa No Update
                         </Button>
                     </div>
@@ -70,7 +70,7 @@ export default function TmpWarningBarState() {
                         })}>
                             fxs Major Update
                         </Button>
-                        <Button size="sm" onClick={() => setFxUpdateData(undefined)}>
+                        <Button size="sm" onClick={() => setFxUpdateData(false)}>
                             fxs No Update
                         </Button>
                     </div>
